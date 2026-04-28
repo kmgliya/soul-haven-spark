@@ -1,4 +1,29 @@
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+
+export const Component = () => {
+  // Kept to match provided component signature
+  const [count, setCount] = useState(0);
+
+  return (
+    <div className="min-h-screen w-full bg-background relative">
+      {/* Magenta Orb Grid Background */}
+      <div
+        className="absolute inset-0 z-0 animate-grid-float"
+        style={{
+          background: "transparent",
+          backgroundImage: `
+            linear-gradient(to right, rgba(71,85,105,0.14) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(71,85,105,0.14) 1px, transparent 1px),
+            radial-gradient(circle at 50% 60%, rgba(236,72,153,0.14) 0%, rgba(168,85,247,0.06) 40%, transparent 70%)
+          `,
+          backgroundSize: "40px 40px, 40px 40px, 100% 100%",
+        }}
+      />
+      {/* Your Content/Components */}
+    </div>
+  );
+};
 
 export function GridBackground({
   className,
@@ -8,28 +33,16 @@ export function GridBackground({
   children?: React.ReactNode;
 }) {
   return (
-    <div className={cn("relative w-full", className)}>
-      {/* Magenta Orb Grid Background */}
-      <div
-        className="pointer-events-none absolute inset-0 -z-10 animate-grid-float"
-        style={{
-          background: "transparent",
-          backgroundImage: `
-            linear-gradient(to right, rgba(71,85,105,0.12) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(71,85,105,0.12) 1px, transparent 1px),
-            radial-gradient(circle at 50% 60%, rgba(var(--color-primary-rgb),0.18) 0%, rgba(168,85,247,0.06) 40%, transparent 70%)
-          `,
-          backgroundSize: "44px 44px, 44px 44px, 100% 100%",
-          maskImage: "radial-gradient(circle at 50% 40%, black 40%, transparent 72%)",
-          WebkitMaskImage: "radial-gradient(circle at 50% 40%, black 40%, transparent 72%)",
-        }}
-      />
+    <div className={cn("relative w-full overflow-hidden", className)}>
+      <div className="absolute inset-0 z-0">
+        <Component />
+      </div>
 
-      {/* Soft blobs */}
-      <div className="pointer-events-none absolute -left-24 -top-24 -z-10 h-72 w-72 rounded-full bg-primary/12 blur-[60px] animate-orb-drift" />
-      <div className="pointer-events-none absolute -right-32 top-24 -z-10 h-80 w-80 rounded-full bg-fuchsia-400/10 blur-[70px] animate-orb-drift [animation-delay:-6s]" />
+      {/* Soft blobs (extra depth) */}
+      <div className="pointer-events-none absolute -left-24 -top-24 z-0 h-72 w-72 rounded-full bg-primary/10 blur-[60px] animate-orb-drift" />
+      <div className="pointer-events-none absolute -right-32 top-24 z-0 h-80 w-80 rounded-full bg-fuchsia-400/10 blur-[70px] animate-orb-drift [animation-delay:-6s]" />
 
-      {children}
+      <div className="relative z-10">{children}</div>
     </div>
   );
 }

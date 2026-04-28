@@ -14,6 +14,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { PremiumPaywallDialog } from "@/components/PremiumPaywallDialog";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -217,9 +218,14 @@ function ProfilePage() {
             <p className="mt-2 text-sm text-white/70 leading-relaxed">
               Эксклюзивные задания для пар и бесконечная Капсула.
             </p>
-            <button className="mt-8 w-full rounded-2xl bg-white py-4 text-sm font-black uppercase tracking-widest text-indigo-700 transition-transform active:scale-95 group-hover:scale-[1.02]">
-              Активировать
-            </button>
+            <PremiumPaywallDialog
+              className="sm:max-w-[560px]"
+              trigger={
+                <button className="mt-8 w-full rounded-2xl bg-white py-4 text-sm font-black uppercase tracking-widest text-indigo-700 transition-transform active:scale-95 group-hover:scale-[1.02]">
+                  Активировать
+                </button>
+              }
+            />
           </section>
         </div>
       </div>

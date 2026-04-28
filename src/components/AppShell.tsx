@@ -2,6 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { Home, Sparkles, Image as ImageIcon, Lightbulb, User, Heart } from "lucide-react";
 import React from "react";
 import { GridBackground } from "@/components/ui/grid-background";
+import { PremiumPaywallDialog } from "@/components/PremiumPaywallDialog";
 
 const items = [
   { to: "/home",    label: "Дом",     icon: Home       },
@@ -82,11 +83,18 @@ export function SideNav() {
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
           Откройте все возможности для вашей пары.
         </p>
+        <PremiumPaywallDialog
+          trigger={
+            <button className="mt-4 flex w-full items-center justify-center rounded-2xl bg-primary py-3 text-xs font-bold text-primary-foreground transition-transform hover:scale-[1.02] active:scale-[0.98]">
+              Узнать больше
+            </button>
+          }
+        />
         <Link
           to="/profile"
-          className="mt-4 flex w-full items-center justify-center rounded-2xl bg-primary py-3 text-xs font-bold text-primary-foreground transition-transform hover:scale-[1.02] active:scale-[0.98]"
+          className="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-border bg-background/70 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-foreground hover:bg-accent transition-colors"
         >
-          Узнать больше
+          Профиль
         </Link>
       </div>
     </aside>

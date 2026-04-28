@@ -32,6 +32,7 @@ export interface AppState {
   todayAnswered: { me: boolean; partner: boolean };
   todayMyAnswer: string;
   todayPartnerAnswer: string;
+  q36: Record<string, { me?: string; partner?: string }>;
   capsule: CapsuleItem[];
   memory: { id: string; date: string; type: string; title: string }[];
   earnedBadges: string[];
@@ -54,6 +55,7 @@ const DEFAULT_STATE: AppState = {
   todayAnswered: { me: false, partner: true },
   todayMyAnswer: "",
   todayPartnerAnswer: "Я очень ценю нашу атмосферу. ❤️",
+  q36: {},
   capsule: [],
   memory: [
     {

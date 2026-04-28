@@ -171,10 +171,41 @@
   100% { opacity: 0.8; filter: blur(20px); }
 }
 
+@keyframes orb-drift {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(18px, -14px, 0) scale(1.05); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes grid-float {
+  0% { transform: translate3d(0, 0, 0); opacity: 0.9; }
+  50% { transform: translate3d(-10px, 8px, 0); opacity: 1; }
+  100% { transform: translate3d(0, 0, 0); opacity: 0.9; }
+}
+
+@keyframes chip-shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 /* Утилиты для задержки анимаций в Bento-сетке */
 .delay-100 { animation-delay: 100ms; }
 .delay-200 { animation-delay: 200ms; }
 .delay-300 { animation-delay: 300ms; }
+
+@layer utilities {
+  .animate-orb-drift {
+    animation: orb-drift 12s ease-in-out infinite;
+  }
+  .animate-grid-float {
+    animation: grid-float 10s ease-in-out infinite;
+  }
+  .chip-shimmer {
+    background-size: 180% 180%;
+    animation: chip-shimmer 6s ease-in-out infinite;
+  }
+}
 
 /* Кастомные стили для скролла в темной теме */
 ::selection {

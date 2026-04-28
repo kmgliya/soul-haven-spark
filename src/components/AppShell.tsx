@@ -1,6 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { Home, Sparkles, Image as ImageIcon, Lightbulb, User, Heart } from "lucide-react";
 import React from "react";
+import { GridBackground } from "@/components/ui/grid-background";
 
 const items = [
   { to: "/home",    label: "Дом",     icon: Home       },
@@ -97,9 +98,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen bg-background text-foreground antialiased selection:bg-primary/20">
       <SideNav />
       <main className="relative flex-1 overflow-y-auto pb-32 md:pb-0">
-        {/* Фоновое свечение */}
-        <div className="pointer-events-none absolute left-1/2 top-0 h-[500px] w-full -translate-x-1/2 bg-primary/5 blur-[120px]" />
-        <div className="relative z-10">{children}</div>
+        <GridBackground className="min-h-screen">
+          <div className="relative z-10">{children}</div>
+        </GridBackground>
       </main>
       <BottomNav />
     </div>

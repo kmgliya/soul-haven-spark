@@ -40,8 +40,8 @@ function TodayPage() {
     <AppShell>
       <div className="container-web page-pad max-w-5xl">
         <header className="mb-10 flex flex-col items-center text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-500/25 bg-orange-500/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-orange-600">
-            <Flame size={12} fill="currentColor" /> Активный день
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-gradient-to-r from-primary/15 via-fuchsia-500/10 to-primary/15 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-primary chip-shimmer">
+            <Flame size={12} className="text-primary" /> Активный день
           </div>
           <h1 className="font-display text-5xl font-black tracking-tight text-foreground">Для вас двоих</h1>
         </header>

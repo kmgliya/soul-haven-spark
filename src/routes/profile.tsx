@@ -13,6 +13,7 @@ import {
   Sparkles,
   Image as ImageIcon,
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -182,17 +183,25 @@ function ProfilePage() {
               icon={<Settings size={18} />}
               label="Код связи"
               value={s.coupleCode}
+              onClick={() => {}}
             />
             <SettingItem
               icon={<Shield size={18} />}
               label="Приватность 18+"
-              value={s.verifiedAdult ? "Активно" : "Выкл."}
-              onClick={() => set({ verifiedAdult: !s.verifiedAdult })}
+              value=""
+              right={
+                <Switch
+                  checked={s.verifiedAdult}
+                  onCheckedChange={(checked) => set({ verifiedAdult: checked })}
+                  aria-label="Приватность 18+"
+                />
+              }
             />
             <SettingItem
               icon={<Bell size={18} />}
               label="Уведомления"
               value="09:00"
+              onClick={() => {}}
             />
             <SettingItem
               icon={<LogOut size={18} className="text-red-500" />}
@@ -224,17 +233,20 @@ function SettingItem({
   value,
   onClick,
   danger,
+  right,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   onClick?: () => void;
   danger?: boolean;
+  right?: React.ReactNode;
 }) {
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center justify-between px-8 py-6 transition-colors hover:bg-accent border-b border-border last:border-0"
+      className="flex w-full items-center justify-between px-8 py-6 transition-colors hover:bg-accent border-b border-border last:border-0 disabled:cursor-default"
+      disabled={!onClick}
     >
       <div className="flex items-center gap-4 text-foreground/80">
         <span className={danger ? "text-red-500" : "text-primary"}>{icon}</span>
@@ -243,10 +255,14 @@ function SettingItem({
         </span>
       </div>
       <div className="flex items-center gap-3">
-        <span className="text-sm font-medium text-muted-foreground">
-          {value}
-        </span>
-        <ChevronRight size={16} className="text-muted-foreground/50" />
+        {right ? (
+          right
+        ) : (
+          <>
+            <span className="text-sm font-medium text-muted-foreground">{value}</span>
+            <ChevronRight size={16} className="text-muted-foreground/50" />
+          </>
+        )}
       </div>
     </button>
   );

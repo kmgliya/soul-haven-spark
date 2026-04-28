@@ -35,25 +35,26 @@
 }
 
 :root {
-  /* Светлая тема (чистая, с мягкими тенями) */
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.12 0.01 20);
-  
-  --primary: oklch(0.6 0.18 15); /* Яркий розово-красный */
-  --primary-rgb: 235, 87, 113;
+  /* Светлая тема (пастель, мягкие градиенты как в референсах) */
+  --background: oklch(0.985 0.008 275); /* очень светлый лавандовый */
+  --foreground: oklch(0.2 0.02 275); /* почти чёрный с холодным подтоном */
+
+  /* Основной акцент: лаванда/индиго (без приторного розового) */
+  --primary: oklch(0.62 0.18 285);
+  --primary-rgb: 109, 99, 241; /* для rgba эффектов */
   --primary-foreground: oklch(1 0 0);
 
-  --card: oklch(0.98 0.005 20);
-  --muted: oklch(0.96 0.005 20);
-  --muted-foreground: oklch(0.5 0.01 20);
-  --surface: oklch(0.985 0.005 20);
-  --surface-2: oklch(0.97 0.006 20);
+  --card: oklch(0.995 0.003 275); /* почти белый, чуть в лаванду */
+  --muted: oklch(0.965 0.01 275);
+  --muted-foreground: oklch(0.52 0.02 275);
+  --surface: oklch(0.99 0.006 275);
+  --surface-2: oklch(0.975 0.01 275);
   
-  --border: oklch(0.92 0.005 20);
-  --accent: oklch(0.94 0.03 15);
-  --ring: oklch(0.6 0.18 15 / 45%);
+  --border: oklch(0.9 0.01 275 / 70%);
+  --accent: oklch(0.955 0.02 285);
+  --ring: oklch(0.62 0.18 285 / 45%);
 
-  --shadow-glow: 0 0 20px rgba(var(--primary-rgb), 0.2);
+  --shadow-glow: 0 0 20px rgba(var(--primary-rgb), 0.18);
 }
 
 .dark {
@@ -61,8 +62,8 @@
   --background: oklch(0.11 0 0); /* Почти черный */
   --foreground: oklch(0.98 0.006 20);
 
-  --primary: oklch(0.65 0.2 15);
-  --primary-rgb: 255, 64, 105;
+  --primary: oklch(0.68 0.18 285);
+  --primary-rgb: 129, 122, 255;
   --primary-foreground: oklch(1 0 0);
 
   --card: oklch(0.15 0.01 20); /* Темно-серый для карточек */
@@ -72,8 +73,8 @@
   --surface-2: oklch(0.19 0.012 20);
 
   --border: oklch(1 0 0 / 8%);
-  --accent: oklch(0.2 0.05 15);
-  --ring: oklch(0.65 0.2 15 / 55%);
+  --accent: oklch(0.2 0.03 285);
+  --ring: oklch(0.68 0.18 285 / 55%);
 }
 
 @layer base {
@@ -107,11 +108,11 @@
 
   /* Эффект стекла (Glassmorphism) */
   .glass {
-    @apply bg-white/5 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)];
+    @apply bg-background/70 backdrop-blur-2xl border border-border shadow-[0_14px_40px_rgba(17,24,39,0.12)];
   }
 
   .surface {
-    @apply border border-white/10 bg-white/5 backdrop-blur-xl;
+    @apply border border-border bg-card/80 backdrop-blur-xl;
   }
 
   .surface-solid {
@@ -120,7 +121,7 @@
 
   /* Мягкое неоновое свечение */
   .glow-primary {
-    box-shadow: 0 0 40px -10px rgba(var(--primary-rgb), 0.4);
+    box-shadow: 0 0 44px -12px rgba(var(--primary-rgb), 0.32);
   }
 
   .text-gradient {
@@ -143,9 +144,9 @@
 
   /* Кастомный Input в стиле 21st.dev */
   .input-premium {
-    @apply w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 
-           text-white placeholder:text-white/20 outline-none transition-all
-           focus:border-primary/50 focus:bg-white/10 focus:ring-4 focus:ring-primary/10;
+    @apply w-full bg-background/70 border border-border rounded-2xl px-5 py-4
+           text-foreground placeholder:text-muted-foreground/70 outline-none transition-all
+           focus:border-primary/40 focus:ring-4 focus:ring-primary/10;
   }
 
   .focus-ring {

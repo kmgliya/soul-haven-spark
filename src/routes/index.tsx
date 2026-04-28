@@ -44,7 +44,7 @@ function Landing() {
       <main className="relative z-10 mx-auto max-w-5xl px-6 pt-20 pb-32 text-center md:pt-32">
         <h1 className="font-display text-6xl font-black leading-[0.9] tracking-tighter sm:text-8xl md:text-9xl">
           Станьте <br />
-          <span className="bg-gradient-to-b from-primary to-red-600 bg-clip-text text-transparent">Ближе</span>
+          <span className="bg-gradient-to-b from-primary to-indigo-500 bg-clip-text text-transparent">Ближе</span>
         </h1>
 
         <p className="mx-auto mt-10 max-w-xl text-lg font-medium leading-relaxed text-muted-foreground md:text-xl">

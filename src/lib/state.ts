@@ -1,13 +1,22 @@
-// Глобальное mock-состояние пары. Хранится в localStorage.
 import { useEffect, useState } from "react";
-import { storage } from "./storage";
 
 export type CoupleType = "together" | "city" | "ldr";
 
 export interface PartnerProfile {
   name: string;
-  birthday?: string;
   emoji: string;
+  avatarImage?: string; // dataURL (локально), если пользователь загрузил фото
+  birthday?: string;
+}
+
+export interface CapsuleItem {
+  id: string;
+  from: "me" | "partner";
+  text?: string;
+  emoji?: string;
+  image?: string;
+  date: string;
+  openAt?: string; // если в будущем — капсула закрыта до этого времени
 }
 
 export interface AppState {
@@ -16,78 +25,69 @@ export interface AppState {
   partner: PartnerProfile;
   coupleCode: string;
   coupleType: CoupleType;
-  startDate: string; // ISO
+  startDate: string;
   streak: number;
   recordStreak: number;
-  verifiedAdult: boolean;
-  adultFilterOff: boolean;
   premium: boolean;
-  // активность дня
+  verifiedAdult: boolean; // Добавлено
+  adultFilterOff: boolean; // Добавлено
   todayAnswered: { me: boolean; partner: boolean };
   todayMyAnswer: string;
   todayPartnerAnswer: string;
-  // капсула
-  capsule: { id: string; from: "me" | "partner"; text?: string; emoji?: string; date: string }[];
-  // память
+  q36: Record<string, { me?: string; partner?: string }>;
+  capsule: CapsuleItem[];
   memory: { id: string; date: string; type: string; title: string }[];
   earnedBadges: string[];
 }
 
-const DEFAULT: AppState = {
+const STORAGE_KEY = "lovespace_premium_v2";
+
+const DEFAULT_STATE: AppState = {
   onboarded: false,
-  me: { name: "Ты", emoji: "🌸" },
-  partner: { name: "Партнёр", emoji: "🌿" },
-  coupleCode: "L0VE",
+  me: { name: "Ты", emoji: "🍂" },
+  partner: { name: "Партнёр", emoji: "🦊" },
+  coupleCode: "LOVE-2024",
   coupleType: "together",
   startDate: new Date().toISOString(),
-  streak: 0,
-  recordStreak: 0,
+  streak: 3,
+  recordStreak: 5,
+  premium: false,
   verifiedAdult: false,
   adultFilterOff: false,
-  premium: false,
-  todayAnswered: { me: false, partner: false },
+  todayAnswered: { me: false, partner: true },
   todayMyAnswer: "",
-  todayPartnerAnswer: "Я очень ценю как ты заботишься обо мне. Спасибо что ты есть. ❤️",
-  capsule: [
-    {
-      id: "seed1",
-      from: "partner",
-      text: "Скучаю по тебе уже 🥺",
-      emoji: "💌",
-      date: new Date(Date.now() - 86400000).toISOString(),
-    },
-    {
-      id: "seed2",
-      from: "partner",
-      text: "Наш закат вчера",
-      emoji: "🌅",
-      date: new Date(Date.now() - 2 * 86400000).toISOString(),
-    },
-  ],
+  todayPartnerAnswer: "Я очень ценю нашу атмосферу. ❤️",
+  q36: {},
+  capsule: [],
   memory: [
     {
       id: "m1",
-      date: new Date(Date.now() - 7 * 86400000).toISOString(),
-      type: "challenge",
-      title: "Завершено: 7 дней благодарности",
-    },
-    {
-      id: "m2",
-      date: new Date(Date.now() - 3 * 86400000).toISOString(),
-      type: "question",
-      title: "Ответили на вопрос дня",
+      date: new Date().toISOString(),
+      type: "milestone",
+      title: "Начало истории",
     },
   ],
   earnedBadges: ["b1"],
 };
 
-const KEY = "lovespace.state.v1";
+const storage = {
+  get: <T>(key: string, fallback: T): T => {
+    if (typeof window === "undefined") return fallback;
+    const item = window.localStorage.getItem(key);
+    return item ? JSON.parse(item) : fallback;
+  },
+  set: <T>(key: string, value: T) => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(key, JSON.stringify(value));
+    }
+  },
+};
 
-let memState: AppState = storage.get<AppState>(KEY, DEFAULT);
+let memState: AppState = storage.get<AppState>(STORAGE_KEY, DEFAULT_STATE);
 const listeners = new Set<() => void>();
 
 function notify() {
-  storage.set(KEY, memState);
+  storage.set(STORAGE_KEY, memState);
   listeners.forEach((l) => l());
 }
 
@@ -101,19 +101,11 @@ export function setState(patch: Partial<AppState> | ((s: AppState) => Partial<Ap
   notify();
 }
 
-export function resetState() {
-  memState = DEFAULT;
-  notify();
-}
-
 export function useAppState(): [AppState, typeof setState] {
   const [, force] = useState(0);
   useEffect(() => {
     const l = () => force((n) => n + 1);
     listeners.add(l);
-    // hydrate from storage on mount (SSR safety)
-    memState = storage.get<AppState>(KEY, memState);
-    force((n) => n + 1);
     return () => {
       listeners.delete(l);
     };
@@ -123,6 +115,11 @@ export function useAppState(): [AppState, typeof setState] {
 
 export function daysTogether(startISO: string) {
   const start = new Date(startISO).getTime();
-  const now = Date.now();
-  return Math.max(0, Math.floor((now - start) / 86400000));
+  const diff = Date.now() - start;
+  return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
+}
+
+export function resetState() {
+  memState = { ...DEFAULT_STATE };
+  notify();
 }

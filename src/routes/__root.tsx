@@ -1,4 +1,5 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
 
@@ -28,24 +29,19 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "LoveSpace — приложение для пар" },
-      { name: "description", content: "LoveSpace" },
+      {
+        name: "description",
+        content:
+          "LoveSpace — ежедневные активности, общая капсула воспоминаний и идеи для свиданий для пар.",
+      },
       { name: "author", content: "LoveSpace" },
       { property: "og:title", content: "LoveSpace — приложение для пар" },
-      { property: "og:description", content: "LoveSpace" },
+      {
+        property: "og:description",
+        content: "Ежедневные активности и общая капсула воспоминаний для пар.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "LoveSpace — приложение для пар" },
-      { name: "twitter:description", content: "LoveSpace" },
-      {
-        property: "og:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/86e2ba06-514f-42a2-938f-d0d837a5392b/id-preview-c557dfa6--d8233979-588d-44f8-9bd8-b829b42e0701.lovable.app-1777284796716.png",
-      },
-      {
-        name: "twitter:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/86e2ba06-514f-42a2-938f-d0d837a5392b/id-preview-c557dfa6--d8233979-588d-44f8-9bd8-b829b42e0701.lovable.app-1777284796716.png",
-      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -53,7 +49,7 @@ export const Route = createRootRoute({
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap",
       },
     ],
   }),
@@ -70,6 +66,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        <Toaster position="top-center" />
         <Scripts />
       </body>
     </html>

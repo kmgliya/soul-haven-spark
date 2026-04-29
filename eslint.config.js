@@ -28,6 +28,7 @@ export default tseslint.config(
   {
     files: ["src/components/ui/**/*.{ts,tsx}", "src/router.tsx"],
     rules: {
+      // shadcn/ui and TanStack router entry often export helpers alongside components
       "react-refresh/only-export-components": "off",
     },
   },

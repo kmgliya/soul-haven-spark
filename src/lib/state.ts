@@ -95,9 +95,7 @@ export function getState() {
   return memState;
 }
 
-export function setState(
-  patch: Partial<AppState> | ((s: AppState) => Partial<AppState>)
-) {
+export function setState(patch: Partial<AppState> | ((s: AppState) => Partial<AppState>)) {
   const next = typeof patch === "function" ? patch(memState) : patch;
   memState = { ...memState, ...next };
   notify();
@@ -108,7 +106,9 @@ export function useAppState(): [AppState, typeof setState] {
   useEffect(() => {
     const l = () => force((n) => n + 1);
     listeners.add(l);
-    return () => listeners.delete(l);
+    return () => {
+      listeners.delete(l);
+    };
   }, []);
   return [memState, setState];
 }

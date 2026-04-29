@@ -1,22 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { AppShell } from "@/components/AppShell";
 import { useAppState } from "@/lib/state";
-import {
-  dailyQuestions,
-  dailyTasks,
-  challenges,
-  dailyQuestionsGame,
-} from "@/lib/mock-data";
-import {
-  MessageCircle,
-  Target,
-  Zap,
-  Trophy,
-  ChevronRight,
-  Flame,
-  Heart,
-} from "lucide-react";
+import { dailyQuestions, dailyTasks, challenges, dailyQuestionsGame } from "@/lib/mock-data";
+import { MessageCircle, Target, Zap, Trophy, ChevronRight, Flame, Heart } from "lucide-react";
 
 export const Route = createFileRoute("/today")({
   head: () => ({
@@ -44,7 +31,9 @@ function TodayPage() {
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-gradient-to-r from-primary/15 via-fuchsia-500/10 to-primary/15 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-primary chip-shimmer">
             <Flame size={12} className="text-primary" /> Активный день
           </div>
-          <h1 className="font-display text-5xl font-black tracking-tight text-foreground">Для вас двоих</h1>
+          <h1 className="font-display text-5xl font-black tracking-tight text-foreground">
+            Для вас двоих
+          </h1>
         </header>
 
         <div className="sticky top-4 z-40 mb-12 flex justify-center">
@@ -82,13 +71,15 @@ function TodayPage() {
 
 function QuestionTab() {
   const [s, set] = useAppState();
-  const question =
-    dailyQuestions[new Date().getDate() % dailyQuestions.length];
+  const question = dailyQuestions[new Date().getDate() % dailyQuestions.length];
   const [draft, setDraft] = useState(s.todayMyAnswer);
   const [revealed, setRevealed] = useState(s.todayAnswered.me && s.todayAnswered.partner);
   const [opening, setOpening] = useState(false);
 
-  const waitingPartner = useMemo(() => s.todayAnswered.me && !s.todayAnswered.partner, [s.todayAnswered.me, s.todayAnswered.partner]);
+  const waitingPartner = useMemo(
+    () => s.todayAnswered.me && !s.todayAnswered.partner,
+    [s.todayAnswered.me, s.todayAnswered.partner],
+  );
 
   useEffect(() => {
     const done = s.todayAnswered.me && s.todayAnswered.partner;
@@ -100,10 +91,9 @@ function QuestionTab() {
     set({
       todayMyAnswer: draft,
       todayAnswered: { ...s.todayAnswered, me: true, partner: false },
-      todayPartnerAnswer:
-        s.todayPartnerAnswer?.trim()
-          ? s.todayPartnerAnswer
-          : "Я бы сказала, что люблю твой взгляд на мелочи. И это очень мило. 💗",
+      todayPartnerAnswer: s.todayPartnerAnswer?.trim()
+        ? s.todayPartnerAnswer
+        : "Я бы сказала, что люблю твой взгляд на мелочи. И это очень мило. 💗",
       streak: s.streak + 1,
     });
     setOpening(false);
@@ -155,9 +145,7 @@ function QuestionTab() {
             <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-4">
               {s.me.name} (Вы)
             </p>
-            <p className="text-lg font-medium text-foreground leading-relaxed">
-              {s.todayMyAnswer}
-            </p>
+            <p className="text-lg font-medium text-foreground leading-relaxed">{s.todayMyAnswer}</p>
           </div>
           <div className="rounded-[32px] border border-primary/25 bg-primary/10 p-6 shadow-sm">
             <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-4">
@@ -182,7 +170,8 @@ function SealedWaitCard({ opening, partnerName }: { opening: boolean; partnerNam
             Ожидание партнёра
           </p>
           <p className="mt-2 text-sm font-semibold text-muted-foreground">
-            Как только <span className="text-foreground">{partnerName}</span> ответит — письмо раскроется.
+            Как только <span className="text-foreground">{partnerName}</span> ответит — письмо
+            раскроется.
           </p>
         </div>
         <div className="shrink-0 inline-flex items-center gap-2 rounded-full bg-rose-500/10 px-3 py-1 text-xs font-bold text-rose-600">
@@ -217,7 +206,12 @@ function GuessTab() {
   const games = [
     {
       q: "Где бы я хотел(а) встретить старость?",
-      options: ["Домик в горах", "Квартира в мегаполисе", "Вилла у океана", "В постоянных путешествиях"],
+      options: [
+        "Домик в горах",
+        "Квартира в мегаполисе",
+        "Вилла у океана",
+        "В постоянных путешествиях",
+      ],
     },
     {
       q: "Что я выберу в идеальное утро?",
@@ -259,9 +253,7 @@ function GuessTab() {
         ) : (
           <>
             <p className="eyebrow">итог</p>
-            <h2 className="mt-3 text-2xl font-black text-foreground">
-              Милый итог дня
-            </h2>
+            <h2 className="mt-3 text-2xl font-black text-foreground">Милый итог дня</h2>
             <p className="mt-3 text-sm font-semibold text-muted-foreground leading-relaxed">
               Не важно какие варианты выбрали — главное, что вы выбираете друг друга. 💗
             </p>
@@ -327,9 +319,7 @@ function TaskTab() {
         <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10 text-primary shadow-inner">
           <Zap size={40} fill="currentColor" />
         </div>
-        <h2 className="text-3xl font-black text-foreground leading-tight">
-          {task.title}
-        </h2>
+        <h2 className="text-3xl font-black text-foreground leading-tight">{task.title}</h2>
         <p className="mt-4 text-sm font-medium text-muted-foreground uppercase tracking-widest">
           Задание дня
         </p>
@@ -354,12 +344,36 @@ function TaskTab() {
 
         {burst && (
           <div className="pointer-events-none absolute inset-0">
-            <span className="done-heart left-1/2 top-1/2" style={{ ["--dx" as any]: "-64px", ["--dy" as any]: "-44px" }} />
-            <span className="done-heart left-1/2 top-1/2" style={{ ["--dx" as any]: "62px", ["--dy" as any]: "-52px", animationDelay: "70ms" }} />
-            <span className="done-heart left-1/2 top-1/2" style={{ ["--dx" as any]: "-18px", ["--dy" as any]: "-78px", animationDelay: "120ms" }} />
-            <span className="done-heart left-1/2 top-1/2" style={{ ["--dx" as any]: "14px", ["--dy" as any]: "-74px", animationDelay: "160ms" }} />
-            <span className="done-confetti left-1/2 top-1/2" style={{ ["--dx" as any]: "-78px", ["--dy" as any]: "10px" }} />
-            <span className="done-confetti left-1/2 top-1/2" style={{ ["--dx" as any]: "82px", ["--dy" as any]: "6px", animationDelay: "80ms" }} />
+            <span
+              className="done-heart left-1/2 top-1/2"
+              style={{ "--dx": "-64px", "--dy": "-44px" } as CSSProperties}
+            />
+            <span
+              className="done-heart left-1/2 top-1/2"
+              style={{ "--dx": "62px", "--dy": "-52px", animationDelay: "70ms" } as CSSProperties}
+            />
+            <span
+              className="done-heart left-1/2 top-1/2"
+              style={
+                {
+                  "--dx": "-18px",
+                  "--dy": "-78px",
+                  animationDelay: "120ms",
+                } as CSSProperties
+              }
+            />
+            <span
+              className="done-heart left-1/2 top-1/2"
+              style={{ "--dx": "14px", "--dy": "-74px", animationDelay: "160ms" } as CSSProperties}
+            />
+            <span
+              className="done-confetti left-1/2 top-1/2"
+              style={{ "--dx": "-78px", "--dy": "10px" } as CSSProperties}
+            />
+            <span
+              className="done-confetti left-1/2 top-1/2"
+              style={{ "--dx": "82px", "--dy": "6px", animationDelay: "80ms" } as CSSProperties}
+            />
           </div>
         )}
       </div>
@@ -382,9 +396,7 @@ function ChallengeTab() {
             <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
               {c.title}
             </h3>
-            <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-              {c.description}
-            </p>
+            <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{c.description}</p>
           </div>
           <div className="mt-10 flex items-center justify-between">
             <span className="text-xs font-black uppercase tracking-widest text-primary">

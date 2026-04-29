@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { useAppState, daysTogether } from "@/lib/state";
 import { dailyQuestions } from "@/lib/mock-data";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import {
   ChevronRight,
   Flame,
@@ -44,7 +44,9 @@ function HomePage() {
       <div className="container-web page-pad">
         <header className="mb-10 flex items-end justify-between">
           <div>
-            <h1 className="font-display text-4xl font-black tracking-tight text-foreground">Привет</h1>
+            <h1 className="font-display text-4xl font-black tracking-tight text-foreground">
+              Привет
+            </h1>
             <p className="mt-2 text-muted-foreground font-medium">Сегодня прекрасный день.</p>
           </div>
         </header>
@@ -86,13 +88,15 @@ function HomePage() {
                         <span
                           key={i}
                           className="particle"
-                          style={{
-                            background: p.c,
-                            ["--dx" as any]: p.dx,
-                            left: 0,
-                            top: 0,
-                            animationDelay: `${i * 35}ms`,
-                          }}
+                          style={
+                            {
+                              background: p.c,
+                              "--dx": p.dx,
+                              left: 0,
+                              top: 0,
+                              animationDelay: `${i * 35}ms`,
+                            } as CSSProperties
+                          }
                         />
                       ))}
                     </div>
@@ -103,7 +107,9 @@ function HomePage() {
                 <span className="accent-text-shimmer block text-[88px] font-black leading-none tracking-[-0.08em]">
                   {days}
                 </span>
-                <p className="mt-2 text-[13px] font-semibold tracking-wide text-muted-foreground">дней вместе</p>
+                <p className="mt-2 text-[13px] font-semibold tracking-wide text-muted-foreground">
+                  дней вместе
+                </p>
               </div>
             </div>
           </section>
@@ -115,7 +121,10 @@ function HomePage() {
             <div className="relative z-10 flex items-start justify-between gap-6">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full bg-background/40 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[rgba(212,175,55,0.6)]">
-                  <Flame size={14} className="text-orange-400/90 [animation:float_2s_ease-in-out_infinite]" />
+                  <Flame
+                    size={14}
+                    className="text-orange-400/90 [animation:float_2s_ease-in-out_infinite]"
+                  />
                   Стрик
                 </div>
 
@@ -140,11 +149,7 @@ function HomePage() {
               {/* Мини-прогресс к рекорду */}
               <div className="shrink-0">
                 <div className="relative flex h-16 w-16 items-center justify-center">
-                  <svg
-                    viewBox="0 0 44 44"
-                    className="h-16 w-16 -rotate-90"
-                    aria-hidden="true"
-                  >
+                  <svg viewBox="0 0 44 44" className="h-16 w-16 -rotate-90" aria-hidden="true">
                     <circle
                       cx="22"
                       cy="22"
@@ -187,7 +192,10 @@ function HomePage() {
                   </div>
                 </div>
                 <div className="mt-3 h-2 w-16 overflow-hidden rounded-full bg-border">
-                  <div className="h-full rounded-full bg-gradient-to-r from-orange-400 via-amber-400 to-primary" style={{ width: `${Math.round(streakPct * 100)}%` }} />
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-orange-400 via-amber-400 to-primary"
+                    style={{ width: `${Math.round(streakPct * 100)}%` }}
+                  />
                 </div>
               </div>
             </div>

@@ -32,9 +32,7 @@ function Onboarding() {
   const [coupleCode] = useState(() => Math.random().toString(36).slice(2, 6).toUpperCase());
   const [copied, setCopied] = useState(false);
   const [coupleType, setCoupleType] = useState<CoupleType>("together");
-  const [startDate, setStartDate] = useState(
-    new Date().toISOString().slice(0, 10)
-  );
+  const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10));
 
   const stepIdx = STEPS.indexOf(step);
 
@@ -58,10 +56,7 @@ function Onboarding() {
   async function shareCode() {
     const text = `Код пары LoveSpace: ${coupleCode}`;
     try {
-      // Web Share API (mobile / some desktop)
-      // @ts-expect-error: share exists in supporting browsers
-      if (navigator?.share) {
-        // @ts-expect-error: share exists in supporting browsers
+      if ("share" in navigator && typeof navigator.share === "function") {
         await navigator.share({ title: "LoveSpace", text });
         return;
       }
@@ -106,9 +101,18 @@ function Onboarding() {
 
               <div className="grid gap-3">
                 {[
-                  { icon: <Sparkles size={16} className="text-primary" />, t: "Ритуалы и вопросы на каждый день" },
-                  { icon: <CalendarIcon size={16} className="text-primary" />, t: "Счётчик дней и важные даты" },
-                  { icon: <Heart size={16} className="text-primary" fill="currentColor" />, t: "Капсула времени и воспоминания" },
+                  {
+                    icon: <Sparkles size={16} className="text-primary" />,
+                    t: "Ритуалы и вопросы на каждый день",
+                  },
+                  {
+                    icon: <CalendarIcon size={16} className="text-primary" />,
+                    t: "Счётчик дней и важные даты",
+                  },
+                  {
+                    icon: <Heart size={16} className="text-primary" fill="currentColor" />,
+                    t: "Капсула времени и воспоминания",
+                  },
                 ].map((x) => (
                   <div
                     key={x.t}
@@ -170,104 +174,114 @@ function Onboarding() {
           </div>
 
           <main className="rounded-[34px] border border-border bg-card/80 p-6 backdrop-blur-2xl shadow-xl md:p-8">
-          {step === "profile" && (
-            <div className="animate-in fade-in slide-in-from-bottom-6">
-              <h2 className="font-display text-3xl font-black leading-tight md:text-4xl">
-                Давайте настроим <br /> тебя
-              </h2>
-              <p className="mt-3 text-sm font-medium text-muted-foreground">
-                Имена и аватарки можно поменять позже в профиле.
-              </p>
+            {step === "profile" && (
+              <div className="animate-in fade-in slide-in-from-bottom-6">
+                <h2 className="font-display text-3xl font-black leading-tight md:text-4xl">
+                  Давайте настроим <br /> тебя
+                </h2>
+                <p className="mt-3 text-sm font-medium text-muted-foreground">
+                  Имена и аватарки можно поменять позже в профиле.
+                </p>
 
-              <div className="mt-8">
-                <PersonCard
-                  title="Ты"
-                  name={name}
-                  onName={setName}
-                  emoji={emoji}
-                  onEmoji={setEmoji}
-                  avatarImage={avatarImage}
-                  onAvatarImage={setAvatarImage}
+                <div className="mt-8">
+                  <PersonCard
+                    title="Ты"
+                    name={name}
+                    onName={setName}
+                    emoji={emoji}
+                    onEmoji={setEmoji}
+                    avatarImage={avatarImage}
+                    onAvatarImage={setAvatarImage}
+                  />
+                </div>
+              </div>
+            )}
+
+            {step === "code" && (
+              <div className="animate-in fade-in slide-in-from-right-6 text-center">
+                <h2 className="font-display text-3xl font-black md:text-4xl">Код пары</h2>
+                <p className="mt-3 text-sm font-medium text-muted-foreground">
+                  Отправь партнёру — он введёт код и вы соединитесь.
+                </p>
+                <div className="mx-auto mt-8 flex w-full items-center justify-center rounded-[28px] border border-border bg-background/70 px-6 py-8">
+                  <span className="font-display text-5xl font-black tracking-widest text-primary">
+                    {coupleCode}
+                  </span>
+                </div>
+
+                <div className="mt-5 grid grid-cols-2 gap-3">
+                  <button
+                    onClick={shareCode}
+                    className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-primary text-primary-foreground text-xs font-black uppercase tracking-[0.18em] shadow-[0_12px_36px_rgba(var(--color-primary-rgb),0.22)] hover:scale-[1.01] active:scale-[0.99] transition-transform"
+                  >
+                    <Share2 size={16} />
+                    Поделиться
+                  </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(coupleCode);
+                        setCopied(true);
+                        window.setTimeout(() => setCopied(false), 1200);
+                      } catch {
+                        void 0;
+                      }
+                    }}
+                    className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-border bg-background/70 text-xs font-black uppercase tracking-[0.18em] text-foreground hover:bg-accent transition-colors"
+                  >
+                    {copied ? (
+                      <Check size={16} className="text-primary" />
+                    ) : (
+                      <Copy size={16} className="text-primary" />
+                    )}
+                    {copied ? "Скопировано" : "Копировать"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {step === "type" && (
+              <div className="animate-in fade-in slide-in-from-right-6">
+                <h2 className="font-display text-4xl font-bold">Где вы сейчас?</h2>
+                <div className="mt-10 space-y-4">
+                  {[
+                    { v: "together", title: "Живем вместе", icon: "🏠" },
+                    { v: "city", title: "В одном городе", icon: "🚇" },
+                    { v: "ldr", title: "На расстоянии", icon: "✈️" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.v}
+                      onClick={() => setCoupleType(opt.v as CoupleType)}
+                      className={`flex w-full items-center gap-6 rounded-[32px] border-2 p-6 transition-all ${
+                        coupleType === opt.v
+                          ? "border-primary bg-primary/10"
+                          : "border-border bg-background/70 hover:bg-accent"
+                      }`}
+                    >
+                      <span className="text-3xl">{opt.icon}</span>
+                      <span className="text-xl font-bold">{opt.title}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {step === "start" && (
+              <div className="animate-in fade-in slide-in-from-right-6 text-center">
+                <h2 className="font-display text-3xl font-black md:text-4xl">
+                  С какого дня вы вместе?
+                </h2>
+                <p className="mt-3 text-sm font-medium text-muted-foreground">
+                  Это нужно, чтобы красиво считать дни и отмечать годовщины.
+                </p>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="mt-8 w-full rounded-[28px] border border-border bg-background/70 p-6 text-center text-2xl font-black outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40"
                 />
               </div>
-            </div>
-          )}
-
-          {step === "code" && (
-            <div className="animate-in fade-in slide-in-from-right-6 text-center">
-              <h2 className="font-display text-3xl font-black md:text-4xl">Код пары</h2>
-              <p className="mt-3 text-sm font-medium text-muted-foreground">
-                Отправь партнёру — он введёт код и вы соединитесь.
-              </p>
-              <div className="mx-auto mt-8 flex w-full items-center justify-center rounded-[28px] border border-border bg-background/70 px-6 py-8">
-                <span className="font-display text-5xl font-black tracking-widest text-primary">{coupleCode}</span>
-              </div>
-
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                <button
-                  onClick={shareCode}
-                  className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-primary text-primary-foreground text-xs font-black uppercase tracking-[0.18em] shadow-[0_12px_36px_rgba(var(--color-primary-rgb),0.22)] hover:scale-[1.01] active:scale-[0.99] transition-transform"
-                >
-                  <Share2 size={16} />
-                  Поделиться
-                </button>
-                <button
-                  onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(coupleCode);
-                      setCopied(true);
-                      window.setTimeout(() => setCopied(false), 1200);
-                    } catch {}
-                  }}
-                  className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-border bg-background/70 text-xs font-black uppercase tracking-[0.18em] text-foreground hover:bg-accent transition-colors"
-                >
-                  {copied ? <Check size={16} className="text-primary" /> : <Copy size={16} className="text-primary" />}
-                  {copied ? "Скопировано" : "Копировать"}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {step === "type" && (
-            <div className="animate-in fade-in slide-in-from-right-6">
-              <h2 className="font-display text-4xl font-bold">Где вы сейчас?</h2>
-              <div className="mt-10 space-y-4">
-                {[
-                  { v: "together", title: "Живем вместе", icon: "🏠" },
-                  { v: "city", title: "В одном городе", icon: "🚇" },
-                  { v: "ldr", title: "На расстоянии", icon: "✈️" },
-                ].map((opt) => (
-                  <button
-                    key={opt.v}
-                    onClick={() => setCoupleType(opt.v as any)}
-                    className={`flex w-full items-center gap-6 rounded-[32px] border-2 p-6 transition-all ${
-                      coupleType === opt.v
-                        ? "border-primary bg-primary/10"
-                        : "border-border bg-background/70 hover:bg-accent"
-                    }`}
-                  >
-                    <span className="text-3xl">{opt.icon}</span>
-                    <span className="text-xl font-bold">{opt.title}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {step === "start" && (
-            <div className="animate-in fade-in slide-in-from-right-6 text-center">
-              <h2 className="font-display text-3xl font-black md:text-4xl">С какого дня вы вместе?</h2>
-              <p className="mt-3 text-sm font-medium text-muted-foreground">
-                Это нужно, чтобы красиво считать дни и отмечать годовщины.
-              </p>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="mt-8 w-full rounded-[28px] border border-border bg-background/70 p-6 text-center text-2xl font-black outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40"
-              />
-            </div>
-          )}
+            )}
           </main>
 
           <footer className="mt-8 flex gap-4">
@@ -313,7 +327,9 @@ function PersonCard({
   return (
     <div className="rounded-[28px] border border-border bg-background/60 p-5 backdrop-blur-xl">
       <div className="flex items-center justify-between">
-        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">{title}</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
+          {title}
+        </p>
         <label className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-background/70 px-3 text-[10px] font-black uppercase tracking-[0.18em] text-foreground hover:bg-accent transition-colors cursor-pointer">
           <ImagePlus size={14} className="text-primary" />
           фото
@@ -336,7 +352,12 @@ function PersonCard({
       <div className="mt-4 flex items-center gap-4">
         <div className="h-16 w-16 overflow-hidden rounded-[22px] border border-border bg-card shadow-sm">
           {avatarImage ? (
-            <img src={avatarImage} alt="" className="h-full w-full object-cover" draggable={false} />
+            <img
+              src={avatarImage}
+              alt=""
+              className="h-full w-full object-cover"
+              draggable={false}
+            />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-3xl">{emoji}</div>
           )}
@@ -370,7 +391,9 @@ function PersonCard({
                 key={e}
                 onClick={() => onEmoji(e)}
                 className={`flex aspect-square items-center justify-center rounded-2xl text-lg transition-all ${
-                  emoji === e ? "bg-primary text-primary-foreground scale-105" : "bg-accent text-foreground"
+                  emoji === e
+                    ? "bg-primary text-primary-foreground scale-105"
+                    : "bg-accent text-foreground"
                 }`}
               >
                 {e}

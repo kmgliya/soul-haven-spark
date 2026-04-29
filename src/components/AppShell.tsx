@@ -71,7 +71,9 @@ export function SideNav() {
       </ul>
       <div className="mt-auto rounded-2xl bg-gradient-soft p-4 text-sm">
         <p className="font-display text-base font-semibold">LoveSpace Premium</p>
-        <p className="mt-1 text-xs text-muted-foreground">Полная история, эксклюзивные идеи и испытания.</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Полная история, эксклюзивные идеи и испытания.
+        </p>
         <Link
           to="/profile"
           className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"

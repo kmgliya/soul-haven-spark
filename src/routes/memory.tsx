@@ -17,7 +17,12 @@ function MemoryPage() {
   const [s] = useAppState();
   const grouped = groupByMonth([
     ...s.memory,
-    ...s.capsule.map((c) => ({ id: c.id, date: c.date, type: "capsule", title: c.text || "Запись в капсуле" })),
+    ...s.capsule.map((c) => ({
+      id: c.id,
+      date: c.date,
+      type: "capsule",
+      title: c.text || "Запись в капсуле",
+    })),
   ]);
 
   return (
@@ -41,12 +46,18 @@ function MemoryPage() {
               <h3 className="font-display text-lg font-semibold capitalize">{month}</h3>
               <ul className="mt-3 flex flex-col gap-2">
                 {items.map((it) => (
-                  <li key={it.id} className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4">
+                  <li
+                    key={it.id}
+                    className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4"
+                  >
                     <div className="text-2xl">{iconFor(it.type)}</div>
                     <div className="flex-1">
                       <p className="text-sm font-medium leading-snug">{it.title}</p>
                       <p className="mt-0.5 text-xs text-muted-foreground">
-                        {new Date(it.date).toLocaleDateString("ru-RU", { day: "numeric", month: "long" })}
+                        {new Date(it.date).toLocaleDateString("ru-RU", {
+                          day: "numeric",
+                          month: "long",
+                        })}
                       </p>
                     </div>
                   </li>

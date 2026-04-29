@@ -8,7 +8,10 @@ export const Route = createFileRoute("/home")({
   head: () => ({
     meta: [
       { title: "Дом — LoveSpace" },
-      { name: "description", content: "Главный экран вашей пары: активность дня, статья и тема дня." },
+      {
+        name: "description",
+        content: "Главный экран вашей пары: активность дня, статья и тема дня.",
+      },
     ],
   }),
   component: HomePage,
@@ -31,7 +34,9 @@ function HomePage() {
             <div className="text-3xl">💞</div>
             <Avatar emoji={s.partner.emoji} name={s.partner.name} />
           </div>
-          <p className="mt-5 text-sm opacity-90">{s.me.name} и {s.partner.name}</p>
+          <p className="mt-5 text-sm opacity-90">
+            {s.me.name} и {s.partner.name}
+          </p>
           <h2 className="font-display text-4xl font-bold tracking-tight md:text-5xl">
             {days} <span className="text-2xl font-normal opacity-90 md:text-3xl">дней вместе</span>
           </h2>
@@ -42,13 +47,17 @@ function HomePage() {
         </section>
 
         {/* Тема дня */}
-        <p className="mt-6 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Тема дня</p>
+        <p className="mt-6 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Тема дня
+        </p>
         <div className="mt-2 rounded-2xl bg-gradient-soft p-5">
           <p className="font-display text-xl font-semibold leading-snug">{theme}</p>
         </div>
 
         {/* Активность дня */}
-        <p className="mt-6 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Активность дня</p>
+        <p className="mt-6 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Активность дня
+        </p>
         <Link
           to="/today"
           className="mt-2 block overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-card transition-smooth hover:shadow-soft md:p-6"
@@ -70,7 +79,9 @@ function HomePage() {
         </Link>
 
         {/* Статья дня */}
-        <p className="mt-6 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Статья дня</p>
+        <p className="mt-6 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Статья дня
+        </p>
         <article className="mt-2 rounded-3xl border border-border bg-card p-5 shadow-card md:p-6">
           <h3 className="font-display text-lg font-semibold leading-snug">{article.title}</h3>
           <p className="mt-2 text-sm text-muted-foreground">{article.preview}</p>
@@ -79,12 +90,18 @@ function HomePage() {
 
         {/* Быстрые действия */}
         <div className="mt-6 grid grid-cols-2 gap-3">
-          <Link to="/capsule" className="rounded-2xl border border-border bg-card p-4 text-left transition-smooth hover:shadow-soft">
+          <Link
+            to="/capsule"
+            className="rounded-2xl border border-border bg-card p-4 text-left transition-smooth hover:shadow-soft"
+          >
             <div className="text-2xl">📸</div>
             <p className="mt-2 text-sm font-semibold">Капсула</p>
             <p className="text-xs text-muted-foreground">{s.capsule.length} записей</p>
           </Link>
-          <Link to="/ideas" className="rounded-2xl border border-border bg-card p-4 text-left transition-smooth hover:shadow-soft">
+          <Link
+            to="/ideas"
+            className="rounded-2xl border border-border bg-card p-4 text-left transition-smooth hover:shadow-soft"
+          >
             <div className="text-2xl">🌹</div>
             <p className="mt-2 text-sm font-semibold">Идеи свиданий</p>
             <p className="text-xs text-muted-foreground">Открыть подборку</p>

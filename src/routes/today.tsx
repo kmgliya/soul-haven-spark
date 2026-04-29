@@ -41,7 +41,8 @@ function TodayPage() {
                 style={{
                   borderColor: tab === t.id ? "var(--color-primary)" : "var(--color-border)",
                   background: tab === t.id ? "var(--color-primary)" : "var(--color-card)",
-                  color: tab === t.id ? "var(--color-primary-foreground)" : "var(--color-foreground)",
+                  color:
+                    tab === t.id ? "var(--color-primary-foreground)" : "var(--color-foreground)",
                 }}
               >
                 <span className="mr-1">{t.emoji}</span>
@@ -82,8 +83,12 @@ function QuestionTab() {
   return (
     <section className="animate-float-up">
       <div className="rounded-3xl bg-gradient-soft p-6 md:p-8">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Вопрос дня</p>
-        <h2 className="mt-2 font-display text-2xl font-bold leading-snug md:text-3xl">{question}</h2>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Вопрос дня
+        </p>
+        <h2 className="mt-2 font-display text-2xl font-bold leading-snug md:text-3xl">
+          {question}
+        </h2>
         <p className="mt-3 text-xs text-muted-foreground">⏱ Осталось 14 ч до завершения</p>
       </div>
 
@@ -121,12 +126,24 @@ function QuestionTab() {
   );
 }
 
-function AnswerCard({ who, emoji, text, mine }: { who: string; emoji: string; text: string; mine?: boolean }) {
+function AnswerCard({
+  who,
+  emoji,
+  text,
+  mine,
+}: {
+  who: string;
+  emoji: string;
+  text: string;
+  mine?: boolean;
+}) {
   return (
     <div className="rounded-3xl border border-border bg-card p-5 shadow-card">
       <div className="flex items-center gap-2">
         <span className="text-xl">{emoji}</span>
-        <span className="text-sm font-semibold">{who} {mine && <span className="text-muted-foreground">(вы)</span>}</span>
+        <span className="text-sm font-semibold">
+          {who} {mine && <span className="text-muted-foreground">(вы)</span>}
+        </span>
       </div>
       <p className="mt-3 text-sm leading-relaxed">{text}</p>
     </div>
@@ -141,7 +158,9 @@ function GuessTab() {
   return (
     <section className="animate-float-up">
       <div className="rounded-3xl bg-gradient-soft p-6 md:p-8">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Угадай партнёра</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Угадай партнёра
+        </p>
         <h2 className="mt-2 font-display text-2xl font-bold leading-snug">{game.q}</h2>
       </div>
 
@@ -160,12 +179,13 @@ function GuessTab() {
                 borderColor: isCorrect
                   ? "var(--color-success)"
                   : isWrong
-                  ? "var(--color-destructive)"
-                  : "var(--color-border)",
-                background:
-                  isCorrect ? "color-mix(in oklch, var(--color-success) 15%, var(--color-card))"
-                  : isWrong ? "color-mix(in oklch, var(--color-destructive) 12%, var(--color-card))"
-                  : "var(--color-card)",
+                    ? "var(--color-destructive)"
+                    : "var(--color-border)",
+                background: isCorrect
+                  ? "color-mix(in oklch, var(--color-success) 15%, var(--color-card))"
+                  : isWrong
+                    ? "color-mix(in oklch, var(--color-destructive) 12%, var(--color-card))"
+                    : "var(--color-card)",
               }}
             >
               {opt} {isCorrect && "✓"} {isWrong && "✗"}
@@ -176,7 +196,9 @@ function GuessTab() {
 
       {picked !== null && (
         <div className="mt-5 rounded-2xl bg-gradient-romantic p-5 text-center text-primary-foreground animate-float-up">
-          {picked === correct ? "🎉 Угадали! Вы знаете партнёра" : "🙈 Мимо! Хороший повод узнать друг друга получше"}
+          {picked === correct
+            ? "🎉 Угадали! Вы знаете партнёра"
+            : "🙈 Мимо! Хороший повод узнать друг друга получше"}
         </div>
       )}
     </section>

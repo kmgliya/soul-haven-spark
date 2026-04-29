@@ -25,4 +25,10 @@ export default tseslint.config(
     },
   },
   eslintPluginPrettier,
+  {
+    files: ["src/components/ui/**/*.{ts,tsx}", "src/router.tsx"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
 );

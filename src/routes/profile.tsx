@@ -33,11 +33,17 @@ function ProfilePage() {
           {/* карточка пары */}
           <section className="rounded-3xl bg-gradient-romantic p-6 text-primary-foreground shadow-glow">
             <div className="flex items-center justify-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-background/95 text-3xl">{s.me.emoji}</div>
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-background/95 text-3xl">
+                {s.me.emoji}
+              </div>
               <span className="text-2xl">💞</span>
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-background/95 text-3xl">{s.partner.emoji}</div>
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-background/95 text-3xl">
+                {s.partner.emoji}
+              </div>
             </div>
-            <p className="mt-4 text-center text-sm opacity-90">{s.me.name} & {s.partner.name}</p>
+            <p className="mt-4 text-center text-sm opacity-90">
+              {s.me.name} & {s.partner.name}
+            </p>
             <p className="text-center font-display text-3xl font-bold">{days} дней вместе</p>
             <div className="mt-4 grid grid-cols-3 gap-2 text-center">
               <Stat label="Streak" value={`${s.streak}`} />

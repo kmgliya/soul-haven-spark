@@ -5,8 +5,11 @@ import { getState } from "@/lib/state";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "LoveSpace — приложение для пар" },
-      { name: "description", content: "Ежедневные активности, общая капсула воспоминаний и идеи для свиданий." },
+      { title: "LoveSpace— приложение для пар" },
+      {
+        name: "description",
+        content: "Ежедневные активности, общая капсула воспоминаний и идеи для свиданий.",
+      },
     ],
   }),
   component: Landing,
@@ -50,8 +53,8 @@ function Landing() {
         </h1>
 
         <p className="mt-6 max-w-xl text-base text-muted-foreground md:text-lg">
-          Ежедневные вопросы, мини-игры и испытания. Общая капсула воспоминаний.
-          Идеи для свиданий и подарков. Всё чтобы быть ближе — каждый день.
+          Ежедневные вопросы, мини-игры и испытания. Общая капсула воспоминаний. Идеи для свиданий и
+          подарков. Всё чтобы быть ближе — каждый день.
         </p>
 
         <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row">

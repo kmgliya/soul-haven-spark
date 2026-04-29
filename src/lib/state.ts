@@ -49,12 +49,34 @@ const DEFAULT: AppState = {
   todayMyAnswer: "",
   todayPartnerAnswer: "Я очень ценю как ты заботишься обо мне. Спасибо что ты есть. ❤️",
   capsule: [
-    { id: "seed1", from: "partner", text: "Скучаю по тебе уже 🥺", emoji: "💌", date: new Date(Date.now() - 86400000).toISOString() },
-    { id: "seed2", from: "partner", text: "Наш закат вчера", emoji: "🌅", date: new Date(Date.now() - 2 * 86400000).toISOString() },
+    {
+      id: "seed1",
+      from: "partner",
+      text: "Скучаю по тебе уже 🥺",
+      emoji: "💌",
+      date: new Date(Date.now() - 86400000).toISOString(),
+    },
+    {
+      id: "seed2",
+      from: "partner",
+      text: "Наш закат вчера",
+      emoji: "🌅",
+      date: new Date(Date.now() - 2 * 86400000).toISOString(),
+    },
   ],
   memory: [
-    { id: "m1", date: new Date(Date.now() - 7 * 86400000).toISOString(), type: "challenge", title: "Завершено: 7 дней благодарности" },
-    { id: "m2", date: new Date(Date.now() - 3 * 86400000).toISOString(), type: "question", title: "Ответили на вопрос дня" },
+    {
+      id: "m1",
+      date: new Date(Date.now() - 7 * 86400000).toISOString(),
+      type: "challenge",
+      title: "Завершено: 7 дней благодарности",
+    },
+    {
+      id: "m2",
+      date: new Date(Date.now() - 3 * 86400000).toISOString(),
+      type: "question",
+      title: "Ответили на вопрос дня",
+    },
   ],
   earnedBadges: ["b1"],
 };

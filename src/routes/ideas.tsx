@@ -8,7 +8,10 @@ export const Route = createFileRoute("/ideas")({
   head: () => ({
     meta: [
       { title: "Идеи — LoveSpace" },
-      { name: "description", content: "Идеи для свиданий, подарков, протокол 36 вопросов и контакты психологов." },
+      {
+        name: "description",
+        content: "Идеи для свиданий, подарков, протокол 36 вопросов и контакты психологов.",
+      },
     ],
   }),
   component: IdeasPage,
@@ -40,10 +43,12 @@ function IdeasPage() {
                 style={{
                   borderColor: tab === t.id ? "var(--color-primary)" : "var(--color-border)",
                   background: tab === t.id ? "var(--color-primary)" : "var(--color-card)",
-                  color: tab === t.id ? "var(--color-primary-foreground)" : "var(--color-foreground)",
+                  color:
+                    tab === t.id ? "var(--color-primary-foreground)" : "var(--color-foreground)",
                 }}
               >
-                <span className="mr-1">{t.emoji}</span>{t.label}
+                <span className="mr-1">{t.emoji}</span>
+                {t.label}
               </button>
             ))}
           </div>
@@ -88,12 +93,18 @@ function DatesTab() {
       </div>
       <ul className="mt-4 grid gap-3 sm:grid-cols-2">
         {filtered.map((d) => (
-          <li key={d.id} className="rounded-3xl border border-border bg-card p-5 shadow-card transition-smooth hover:shadow-soft">
+          <li
+            key={d.id}
+            className="rounded-3xl border border-border bg-card p-5 shadow-card transition-smooth hover:shadow-soft"
+          >
             <div className="text-2xl">🌹</div>
             <h3 className="mt-2 font-display text-lg font-semibold leading-snug">{d.title}</h3>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {d.tags.map((t) => (
-                <span key={t} className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">
+                <span
+                  key={t}
+                  className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground"
+                >
                   {t}
                 </span>
               ))}
@@ -112,7 +123,9 @@ function GiftsTab() {
         <li key={g.id} className="rounded-3xl border border-border bg-card p-5 shadow-card">
           <div className="text-2xl">🎁</div>
           <h3 className="mt-2 font-display text-lg font-semibold leading-snug">{g.title}</h3>
-          <p className="mt-1 text-xs text-muted-foreground">Повод: {g.occasion} · Бюджет: {g.budget}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Повод: {g.occasion} · Бюджет: {g.budget}
+          </p>
         </li>
       ))}
     </ul>
@@ -129,22 +142,26 @@ function Questions36Tab() {
           <h3 className="font-display text-xl font-semibold">Раунд {r}</h3>
           <p className="text-xs text-muted-foreground">12 вопросов</p>
           <ul className="mt-3 flex flex-col gap-2">
-            {questions36.filter((q) => q.round === r).map((q) => (
-              <li key={q.id} className="overflow-hidden rounded-2xl border border-border bg-card">
-                <button
-                  onClick={() => setOpen(open === q.id ? null : q.id)}
-                  className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-medium"
-                >
-                  <span><span className="text-muted-foreground">#{q.id}</span> {q.text}</span>
-                  <span>{open === q.id ? "−" : "+"}</span>
-                </button>
-                {open === q.id && (
-                  <div className="border-t border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-                    Обсудите ответы вслух. Не торопитесь — это часть протокола сближения.
-                  </div>
-                )}
-              </li>
-            ))}
+            {questions36
+              .filter((q) => q.round === r)
+              .map((q) => (
+                <li key={q.id} className="overflow-hidden rounded-2xl border border-border bg-card">
+                  <button
+                    onClick={() => setOpen(open === q.id ? null : q.id)}
+                    className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-medium"
+                  >
+                    <span>
+                      <span className="text-muted-foreground">#{q.id}</span> {q.text}
+                    </span>
+                    <span>{open === q.id ? "−" : "+"}</span>
+                  </button>
+                  {open === q.id && (
+                    <div className="border-t border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+                      Обсудите ответы вслух. Не торопитесь — это часть протокола сближения.
+                    </div>
+                  )}
+                </li>
+              ))}
           </ul>
         </div>
       ))}
@@ -158,7 +175,9 @@ function PsyTab() {
       {psychologists.map((p) => (
         <li key={p.id} className="rounded-3xl border border-border bg-card p-5 shadow-card">
           <div className="flex items-start gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-soft text-xl">🧠</div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-soft text-xl">
+              🧠
+            </div>
             <div className="flex-1">
               <h3 className="font-display text-lg font-semibold">{p.name}</h3>
               <p className="text-sm text-muted-foreground">{p.focus}</p>

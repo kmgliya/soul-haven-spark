@@ -56,11 +56,41 @@ export const challenges = [
 export const dateIdeas = [
   { id: "d1", title: "Пикник на крыше", budget: "low", location: "city", tags: ["уют", "вечер"] },
   { id: "d2", title: "Кулинарный мастер-класс", budget: "mid", location: "city", tags: ["новое"] },
-  { id: "d3", title: "Прогулка в незнакомом районе", budget: "free", location: "city", tags: ["прогулка"] },
-  { id: "d4", title: "Совместный плейлист и танцы дома", budget: "free", location: "home", tags: ["дом"] },
-  { id: "d5", title: "Видеосвидание со свечами", budget: "free", location: "ldr", tags: ["расстояние"] },
-  { id: "d6", title: "Бронь столика на закате", budget: "high", location: "city", tags: ["романтика"] },
-  { id: "d7", title: "Поход в музей и кофе после", budget: "mid", location: "city", tags: ["культура"] },
+  {
+    id: "d3",
+    title: "Прогулка в незнакомом районе",
+    budget: "free",
+    location: "city",
+    tags: ["прогулка"],
+  },
+  {
+    id: "d4",
+    title: "Совместный плейлист и танцы дома",
+    budget: "free",
+    location: "home",
+    tags: ["дом"],
+  },
+  {
+    id: "d5",
+    title: "Видеосвидание со свечами",
+    budget: "free",
+    location: "ldr",
+    tags: ["расстояние"],
+  },
+  {
+    id: "d6",
+    title: "Бронь столика на закате",
+    budget: "high",
+    location: "city",
+    tags: ["романтика"],
+  },
+  {
+    id: "d7",
+    title: "Поход в музей и кофе после",
+    budget: "mid",
+    location: "city",
+    tags: ["культура"],
+  },
   { id: "d8", title: "Вечер настольных игр", budget: "low", location: "home", tags: ["дом"] },
 ];
 

@@ -8,9 +8,7 @@ function NotFoundComponent() {
       <div className="max-w-md text-center">
         <h1 className="font-display text-7xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold">Страница не найдена</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Похоже, такой страницы здесь нет.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">Похоже, такой страницы здесь нет.</p>
         <div className="mt-6">
           <Link
             to="/"
@@ -38,8 +36,16 @@ export const Route = createRootRoute({
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "LoveSpace — приложение для пар" },
       { name: "twitter:description", content: "LoveSpace" },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/86e2ba06-514f-42a2-938f-d0d837a5392b/id-preview-c557dfa6--d8233979-588d-44f8-9bd8-b829b42e0701.lovable.app-1777284796716.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/86e2ba06-514f-42a2-938f-d0d837a5392b/id-preview-c557dfa6--d8233979-588d-44f8-9bd8-b829b42e0701.lovable.app-1777284796716.png" },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/86e2ba06-514f-42a2-938f-d0d837a5392b/id-preview-c557dfa6--d8233979-588d-44f8-9bd8-b829b42e0701.lovable.app-1777284796716.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/86e2ba06-514f-42a2-938f-d0d837a5392b/id-preview-c557dfa6--d8233979-588d-44f8-9bd8-b829b42e0701.lovable.app-1777284796716.png",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

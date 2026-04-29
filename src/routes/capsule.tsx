@@ -25,7 +25,13 @@ function CapsulePage() {
     if (!text.trim()) return;
     set((cur) => ({
       capsule: [
-        { id: Math.random().toString(36).slice(2), from: "me", text, emoji, date: new Date().toISOString() },
+        {
+          id: Math.random().toString(36).slice(2),
+          from: "me",
+          text,
+          emoji,
+          date: new Date().toISOString(),
+        },
         ...cur.capsule,
       ],
     }));

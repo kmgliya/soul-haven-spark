@@ -106,7 +106,8 @@ function Onboarding() {
                   onClick={() => setPartnerEmoji(e)}
                   className="aspect-square rounded-xl border text-2xl transition-smooth"
                   style={{
-                    borderColor: partnerEmoji === e ? "var(--color-primary)" : "var(--color-border)",
+                    borderColor:
+                      partnerEmoji === e ? "var(--color-primary)" : "var(--color-border)",
                     background: partnerEmoji === e ? "var(--color-secondary)" : "var(--color-card)",
                   }}
                 >
@@ -151,7 +152,9 @@ function Onboarding() {
         {step === "type" && (
           <section className="animate-float-up">
             <h2 className="font-display text-3xl font-bold">Какие вы пара?</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Это поможет подбирать подходящие активности.</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Это поможет подбирать подходящие активности.
+            </p>
 
             <div className="mt-6 flex flex-col gap-3">
               {(
@@ -166,7 +169,8 @@ function Onboarding() {
                   onClick={() => setCoupleType(opt.v)}
                   className="flex items-center gap-4 rounded-2xl border-2 bg-card p-4 text-left transition-smooth"
                   style={{
-                    borderColor: coupleType === opt.v ? "var(--color-primary)" : "var(--color-border)",
+                    borderColor:
+                      coupleType === opt.v ? "var(--color-primary)" : "var(--color-border)",
                   }}
                 >
                   <span className="text-3xl">{opt.emoji}</span>

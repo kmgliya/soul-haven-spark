@@ -11,7 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TodayRouteImport } from './routes/today'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as PsychologyRouteImport } from './routes/psychology'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PracticeRouteImport } from './routes/practice'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MemoryRouteImport } from './routes/memory'
 import { Route as LoginRouteImport } from './routes/login'
@@ -30,9 +32,19 @@ const RegisterRoute = RegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PsychologyRoute = PsychologyRouteImport.update({
+  id: '/psychology',
+  path: '/psychology',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PracticeRoute = PracticeRouteImport.update({
+  id: '/practice',
+  path: '/practice',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -79,7 +91,9 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/memory': typeof MemoryRoute
   '/onboarding': typeof OnboardingRoute
+  '/practice': typeof PracticeRoute
   '/profile': typeof ProfileRoute
+  '/psychology': typeof PsychologyRoute
   '/register': typeof RegisterRoute
   '/today': typeof TodayRoute
 }
@@ -91,7 +105,9 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/memory': typeof MemoryRoute
   '/onboarding': typeof OnboardingRoute
+  '/practice': typeof PracticeRoute
   '/profile': typeof ProfileRoute
+  '/psychology': typeof PsychologyRoute
   '/register': typeof RegisterRoute
   '/today': typeof TodayRoute
 }
@@ -104,7 +120,9 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/memory': typeof MemoryRoute
   '/onboarding': typeof OnboardingRoute
+  '/practice': typeof PracticeRoute
   '/profile': typeof ProfileRoute
+  '/psychology': typeof PsychologyRoute
   '/register': typeof RegisterRoute
   '/today': typeof TodayRoute
 }
@@ -118,7 +136,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/memory'
     | '/onboarding'
+    | '/practice'
     | '/profile'
+    | '/psychology'
     | '/register'
     | '/today'
   fileRoutesByTo: FileRoutesByTo
@@ -130,7 +150,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/memory'
     | '/onboarding'
+    | '/practice'
     | '/profile'
+    | '/psychology'
     | '/register'
     | '/today'
   id:
@@ -142,7 +164,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/memory'
     | '/onboarding'
+    | '/practice'
     | '/profile'
+    | '/psychology'
     | '/register'
     | '/today'
   fileRoutesById: FileRoutesById
@@ -155,7 +179,9 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MemoryRoute: typeof MemoryRoute
   OnboardingRoute: typeof OnboardingRoute
+  PracticeRoute: typeof PracticeRoute
   ProfileRoute: typeof ProfileRoute
+  PsychologyRoute: typeof PsychologyRoute
   RegisterRoute: typeof RegisterRoute
   TodayRoute: typeof TodayRoute
 }
@@ -176,11 +202,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/psychology': {
+      id: '/psychology'
+      path: '/psychology'
+      fullPath: '/psychology'
+      preLoaderRoute: typeof PsychologyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/practice': {
+      id: '/practice'
+      path: '/practice'
+      fullPath: '/practice'
+      preLoaderRoute: typeof PracticeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -243,7 +283,9 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MemoryRoute: MemoryRoute,
   OnboardingRoute: OnboardingRoute,
+  PracticeRoute: PracticeRoute,
   ProfileRoute: ProfileRoute,
+  PsychologyRoute: PsychologyRoute,
   RegisterRoute: RegisterRoute,
   TodayRoute: TodayRoute,
 }

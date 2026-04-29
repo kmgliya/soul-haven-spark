@@ -9,9 +9,7 @@ function NotFoundComponent() {
       <div className="max-w-md text-center">
         <h1 className="font-display text-7xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold">Страница не найдена</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Похоже, такой страницы здесь нет.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">Похоже, такой страницы здесь нет.</p>
         <div className="mt-6">
           <Link
             to="/"
@@ -31,10 +29,17 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "LoveSpace — приложение для пар" },
-      { name: "description", content: "LoveSpace — ежедневные активности, общая капсула воспоминаний и идеи для свиданий для пар." },
+      {
+        name: "description",
+        content:
+          "LoveSpace — ежедневные активности, общая капсула воспоминаний и идеи для свиданий для пар.",
+      },
       { name: "author", content: "LoveSpace" },
       { property: "og:title", content: "LoveSpace — приложение для пар" },
-      { property: "og:description", content: "Ежедневные активности и общая капсула воспоминаний для пар." },
+      {
+        property: "og:description",
+        content: "Ежедневные активности и общая капсула воспоминаний для пар.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

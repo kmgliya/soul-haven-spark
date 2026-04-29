@@ -79,7 +79,9 @@ function CapsulePage() {
     <AppShell>
       <div className="container-web page-pad max-w-3xl">
         <header className="mb-10 text-center">
-          <h1 className="font-display text-4xl font-black tracking-tight text-foreground">Капсула</h1>
+          <h1 className="font-display text-4xl font-black tracking-tight text-foreground">
+            Капсула
+          </h1>
           <p className="mt-2 text-muted-foreground italic">Мгновения, которые останутся с вами</p>
         </header>
 
@@ -104,13 +106,11 @@ function CapsulePage() {
 
             {image && (
               <div className="mt-4 overflow-hidden rounded-[22px] border border-border bg-background/60">
-                <img
-                  src={image}
-                  alt="Вложение капсулы"
-                  className="h-48 w-full object-cover"
-                />
+                <img src={image} alt="Вложение капсулы" className="h-48 w-full object-cover" />
                 <div className="flex items-center justify-between px-4 py-3">
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Вложение</p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                    Вложение
+                  </p>
                   <button
                     onClick={() => setImage(null)}
                     className="rounded-full bg-accent px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-colors"
@@ -120,7 +120,7 @@ function CapsulePage() {
                 </div>
               </div>
             )}
-          
+
             <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-4">
               <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide">
                 {QUICK_EMOJIS.map((e) => (
@@ -216,7 +216,9 @@ function CapsulePage() {
                         <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
                           откроется
                         </p>
-                        <p className="mt-1 text-sm font-bold text-foreground">{formatOpenAt(openAt)}</p>
+                        <p className="mt-1 text-sm font-bold text-foreground">
+                          {formatOpenAt(openAt)}
+                        </p>
                       </div>
                     </div>
                   </PopoverContent>
@@ -242,7 +244,9 @@ function CapsulePage() {
 
           {s.capsule.length === 0 && (
             <div className="rounded-[32px] border border-dashed border-border bg-card p-12 text-center shadow-sm">
-              <p className="text-muted-foreground">Здесь пока пусто. Оставьте первый след в истории вашей пары.</p>
+              <p className="text-muted-foreground">
+                Здесь пока пусто. Оставьте первый след в истории вашей пары.
+              </p>
             </div>
           )}
 
@@ -260,7 +264,9 @@ function CapsulePage() {
 
                 <div className="flex-1 rounded-[28px] border border-border bg-card p-5 shadow-sm transition-colors group-hover:bg-accent">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-black uppercase tracking-widest text-primary">{author.name}</span>
+                    <span className="text-xs font-black uppercase tracking-widest text-primary">
+                      {author.name}
+                    </span>
                     <span className="flex items-center gap-1 text-[10px] text-muted-foreground uppercase tracking-wider">
                       <Clock size={10} />
                       {formatDate(item.date)}
@@ -276,7 +282,9 @@ function CapsulePage() {
                         {item.openAt && (
                           <span className="inline-flex items-center gap-1 rounded-full bg-background/70 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
                             <Lock size={12} className={locked ? "" : "opacity-30"} />
-                            {locked ? `откроется ${formatDateAbsolute(item.openAt)}` : "время пришло"}
+                            {locked
+                              ? `откроется ${formatDateAbsolute(item.openAt)}`
+                              : "время пришло"}
                           </span>
                         )}
                       </div>
@@ -285,9 +293,12 @@ function CapsulePage() {
                         <div className="mt-2 overflow-hidden rounded-[20px] border border-border bg-background/70">
                           <div className="flex items-center justify-between gap-4 px-4 py-3">
                             <div>
-                              <p className="text-sm font-black text-foreground">Запечатано до {formatDateAbsolute(item.openAt!)}</p>
+                              <p className="text-sm font-black text-foreground">
+                                Запечатано до {formatDateAbsolute(item.openAt!)}
+                              </p>
                               <p className="mt-1 text-xs font-semibold text-muted-foreground">
-                                Осталось: <span className="text-foreground">{timeLeft(item.openAt!)}</span>
+                                Осталось:{" "}
+                                <span className="text-foreground">{timeLeft(item.openAt!)}</span>
                               </p>
                             </div>
                             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-foreground/5 text-muted-foreground">
@@ -312,7 +323,9 @@ function CapsulePage() {
                                 превью текста
                               </p>
                               <div className="mt-2 select-none">
-                                <p className={`text-sm font-medium leading-relaxed ${item.text ? "text-foreground" : "text-muted-foreground/70"} blur-[6px]`}>
+                                <p
+                                  className={`text-sm font-medium leading-relaxed ${item.text ? "text-foreground" : "text-muted-foreground/70"} blur-[6px]`}
+                                >
                                   {item.text ? item.text : "—"}
                                 </p>
                               </div>
@@ -350,7 +363,11 @@ function CapsulePage() {
                           )}
                           {item.image && (
                             <div className="mt-3 overflow-hidden rounded-[18px] border border-border bg-background/70">
-                              <img src={item.image} alt="Фото капсулы" className="h-44 w-full object-cover" />
+                              <img
+                                src={item.image}
+                                alt="Фото капсулы"
+                                className="h-44 w-full object-cover"
+                              />
                             </div>
                           )}
                         </>
@@ -377,7 +394,12 @@ function formatDate(iso: string) {
 
 function formatDateAbsolute(iso: string) {
   const d = new Date(iso);
-  return d.toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleString("ru-RU", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function computeOpenAt(openDate: Date | undefined, time: string) {
@@ -409,11 +431,7 @@ function timeLeft(openAt: string) {
   return `${mins}м`;
 }
 
-function setOpenPreset(
-  plusDays: number,
-  setDate: (d: Date) => void,
-  setTime: (t: string) => void,
-) {
+function setOpenPreset(plusDays: number, setDate: (d: Date) => void, setTime: (t: string) => void) {
   const d = new Date();
   d.setDate(d.getDate() + plusDays);
   setDate(d);

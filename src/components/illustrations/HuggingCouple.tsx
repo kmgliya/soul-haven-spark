@@ -2,11 +2,7 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-export function HuggingCouple({
-  className,
-}: {
-  className?: string;
-}) {
+export function HuggingCouple({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 520 360"
@@ -17,7 +13,14 @@ export function HuggingCouple({
     >
       {/* soft blob background */}
       <defs>
-        <linearGradient id="hc_grad" x1="60" y1="50" x2="460" y2="330" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="hc_grad"
+          x1="60"
+          y1="50"
+          x2="460"
+          y2="330"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="rgba(255,255,255,0.92)" />
           <stop offset="1" stopColor="rgba(255,255,255,0.45)" />
         </linearGradient>
@@ -85,4 +88,3 @@ export function HuggingCouple({
     </svg>
   );
 }
-

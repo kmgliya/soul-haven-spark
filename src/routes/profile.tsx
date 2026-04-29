@@ -42,7 +42,9 @@ function ProfilePage() {
     <AppShell>
       <div className="container-web page-pad max-w-5xl">
         <header className="mb-10">
-          <h1 className="font-display text-4xl font-black tracking-tight text-foreground">Профиль</h1>
+          <h1 className="font-display text-4xl font-black tracking-tight text-foreground">
+            Профиль
+          </h1>
         </header>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
@@ -97,12 +99,8 @@ function ProfilePage() {
                 </div>
               </div>
               <div className="mt-12 flex items-baseline gap-2">
-                <span className="text-7xl font-black tracking-tighter">
-                  {days}
-                </span>
-                <span className="text-xl font-bold opacity-70 uppercase tracking-widest">
-                  дней
-                </span>
+                <span className="text-7xl font-black tracking-tighter">{days}</span>
+                <span className="text-xl font-bold opacity-70 uppercase tracking-widest">дней</span>
               </div>
             </div>
           </section>
@@ -120,8 +118,12 @@ function ProfilePage() {
                     Streak
                   </div>
                   <div className="mt-4 flex items-baseline gap-2">
-                    <span className="font-display text-5xl font-black tracking-tight text-foreground">{s.streak}</span>
-                    <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">дней</span>
+                    <span className="font-display text-5xl font-black tracking-tight text-foreground">
+                      {s.streak}
+                    </span>
+                    <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                      дней
+                    </span>
                   </div>
                   <p className="mt-2 text-xs font-semibold text-muted-foreground">
                     Рекорд: <span className="text-foreground">{s.recordStreak}</span>
@@ -130,7 +132,9 @@ function ProfilePage() {
 
                 <div className="shrink-0">
                   <div className="flex h-14 w-14 items-center justify-center rounded-[20px] border border-border bg-background/70 shadow-sm">
-                    <span className="text-sm font-black text-foreground">{Math.round(streakPct * 100)}%</span>
+                    <span className="text-sm font-black text-foreground">
+                      {Math.round(streakPct * 100)}%
+                    </span>
                   </div>
                   <div className="mt-3 h-2 w-14 overflow-hidden rounded-full bg-border">
                     <div
@@ -157,14 +161,18 @@ function ProfilePage() {
                       <ImageIcon size={16} className="text-primary" />
                       <span className="text-xs font-bold text-muted-foreground">Капсула</span>
                     </div>
-                    <p className="mt-3 text-3xl font-black text-foreground leading-none">{s.capsule.length}</p>
+                    <p className="mt-3 text-3xl font-black text-foreground leading-none">
+                      {s.capsule.length}
+                    </p>
                   </div>
                   <div className="rounded-[22px] border border-border bg-background/70 p-4">
                     <div className="flex items-center justify-between">
                       <Award size={16} className="text-primary" />
                       <span className="text-xs font-bold text-muted-foreground">Бейджи</span>
                     </div>
-                    <p className="mt-3 text-3xl font-black text-foreground leading-none">{s.earnedBadges.length}</p>
+                    <p className="mt-3 text-3xl font-black text-foreground leading-none">
+                      {s.earnedBadges.length}
+                    </p>
                   </div>
                 </div>
 
@@ -363,9 +371,7 @@ function SettingItem({
     >
       <div className="flex items-center gap-4 text-foreground/80">
         <span className={danger ? "text-red-500" : "text-primary"}>{icon}</span>
-        <span className={`font-bold ${danger ? "text-red-500" : ""}`}>
-          {label}
-        </span>
+        <span className={`font-bold ${danger ? "text-red-500" : ""}`}>{label}</span>
       </div>
       <div className="flex items-center gap-3">
         {right ? (

@@ -12,4 +12,3 @@ export function ClientOnly({
   if (!mounted) return fallback;
   return children;
 }
-

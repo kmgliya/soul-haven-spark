@@ -177,7 +177,8 @@ export function PremiumPaywallDialog({
               </div>
 
               <div className="mt-3 text-center text-[11px] font-semibold text-muted-foreground">
-                Уже <span className="text-foreground">{socialProof.toLocaleString("ru-RU")}</span> пар активировали Premium
+                Уже <span className="text-foreground">{socialProof.toLocaleString("ru-RU")}</span>{" "}
+                пар активировали Premium
               </div>
 
               <Button className="mt-7 h-12 w-full rounded-[18px] text-xs font-black uppercase tracking-[0.2em] shadow-[0_18px_50px_rgba(var(--color-primary-rgb),0.22)] hover:scale-[1.01] active:scale-[0.99] transition-transform">
@@ -194,4 +195,3 @@ export function PremiumPaywallDialog({
     </Dialog>
   );
 }
-

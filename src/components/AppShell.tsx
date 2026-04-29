@@ -5,11 +5,11 @@ import { GridBackground } from "@/components/ui/grid-background";
 import { PremiumPaywallDialog } from "@/components/PremiumPaywallDialog";
 
 const items = [
-  { to: "/home",    label: "Дом",     icon: Home       },
-  { to: "/today",   label: "Сегодня", icon: Sparkles   },
-  { to: "/capsule", label: "Капсула", icon: ImageIcon  },
-  { to: "/ideas",   label: "Идеи",    icon: Lightbulb  },
-  { to: "/profile", label: "Профиль", icon: User       },
+  { to: "/home", label: "Дом", icon: Home },
+  { to: "/today", label: "Сегодня", icon: Sparkles },
+  { to: "/capsule", label: "Капсула", icon: ImageIcon },
+  { to: "/ideas", label: "Идеи", icon: Lightbulb },
+  { to: "/profile", label: "Профиль", icon: User },
 ] as const;
 
 export function BottomNav() {
@@ -26,15 +26,13 @@ export function BottomNav() {
               key={to}
               to={to}
               className={`relative flex h-12 w-12 items-center justify-center rounded-full transition-all duration-300 ${
-                active 
-                  ? "bg-primary text-primary-foreground scale-110 shadow-[0_0_15px_rgba(var(--color-primary-rgb),0.5)]" 
+                active
+                  ? "bg-primary text-primary-foreground scale-110 shadow-[0_0_15px_rgba(var(--color-primary-rgb),0.5)]"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Icon size={20} strokeWidth={active ? 2.5 : 2} />
-              {active && (
-                <span className="absolute -bottom-1.5 h-1 w-1 rounded-full bg-primary" />
-              )}
+              {active && <span className="absolute -bottom-1.5 h-1 w-1 rounded-full bg-primary" />}
             </Link>
           );
         })}
@@ -53,7 +51,9 @@ export function SideNav() {
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-[0_0_20px_rgba(var(--color-primary-rgb),0.4)]">
           <Heart className="text-primary-foreground" fill="currentColor" size={20} />
         </div>
-        <span className="font-display text-2xl font-bold tracking-tight text-foreground">LoveSpace</span>
+        <span className="font-display text-2xl font-bold tracking-tight text-foreground">
+          LoveSpace
+        </span>
       </Link>
 
       <ul className="flex flex-col gap-2">
@@ -64,7 +64,7 @@ export function SideNav() {
               <Link
                 to={to}
                 className={`flex items-center gap-4 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300 ${
-                  active 
+                  active
                     ? "bg-accent text-foreground"
                     : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
                 }`}

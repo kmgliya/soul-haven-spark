@@ -26,7 +26,9 @@ function MemoryPage() {
     <AppShell>
       <div className="container-web page-pad max-w-3xl">
         <header className="mb-10 text-center">
-          <h1 className="font-display text-4xl font-black tracking-tight text-foreground">Память</h1>
+          <h1 className="font-display text-4xl font-black tracking-tight text-foreground">
+            Память
+          </h1>
           <p className="mt-2 text-muted-foreground">История вашей любви в деталях</p>
         </header>
 
@@ -36,8 +38,8 @@ function MemoryPage() {
               <Crown size={120} />
             </div>
             <h3 className="text-xl font-bold text-foreground flex items-center justify-center gap-2">
-               <Crown size={20} className="text-primary" />
-               LoveSpace Premium
+              <Crown size={20} className="text-primary" />
+              LoveSpace Premium
             </h3>
             <p className="mt-2 text-sm text-muted-foreground max-w-xs mx-auto">
               Откройте доступ к архивам старше 3 месяцев и сохраните каждый момент навсегда.
@@ -59,13 +61,17 @@ function MemoryPage() {
           )}
 
           {grouped.map(([month, items], idx) => (
-            <section key={month} className="relative animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: `${idx * 100}ms` }}>
+            <section
+              key={month}
+              className="relative animate-in fade-in slide-in-from-bottom-4 duration-700"
+              style={{ animationDelay: `${idx * 100}ms` }}
+            >
               <div className="sticky top-24 z-10 mb-6 inline-block rounded-2xl bg-background/70 px-4 py-2 backdrop-blur-md border border-border shadow-sm">
-                 <h3 className="font-display text-sm font-black uppercase tracking-[0.2em] text-primary leading-none">
+                <h3 className="font-display text-sm font-black uppercase tracking-[0.2em] text-primary leading-none">
                   {month}
                 </h3>
               </div>
-              
+
               <ul className="space-y-4">
                 {items.map((it) => (
                   <li
@@ -76,9 +82,7 @@ function MemoryPage() {
                       {iconFor(it.type)}
                     </div>
                     <div className="flex-1 overflow-hidden">
-                      <p className="truncate text-lg font-bold text-foreground">
-                        {it.title}
-                      </p>
+                      <p className="truncate text-lg font-bold text-foreground">{it.title}</p>
                       <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                         {new Date(it.date).toLocaleDateString("ru-RU", {
                           day: "numeric",
@@ -99,8 +103,8 @@ function MemoryPage() {
 
 function iconFor(type: string) {
   if (type === "challenge") return "✨";
-  if (type === "capsule")   return "📸";
-  if (type === "question")  return "💬";
+  if (type === "capsule") return "📸";
+  if (type === "question") return "💬";
   return "💎";
 }
 

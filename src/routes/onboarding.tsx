@@ -1,6 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { setState, type CoupleType } from "@/lib/state";
+import { useEffect, useState } from "react";
+import { useAppState, type CoupleType, type PartnerProfile } from "@/lib/state";
+import { useAuth, RequireAuth } from "@/lib/auth";
+import {
+  createCouple,
+  joinCoupleByCode,
+  normalizeCoupleCode,
+  findCoupleByMember,
+} from "@/lib/couple";
+import { toast } from "sonner";
 import {
   ChevronLeft,
   ChevronRight,
@@ -11,46 +19,139 @@ import {
   Check,
   Calendar as CalendarIcon,
   Sparkles,
+  Users,
+  KeyRound,
+  Loader2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "Начать — LoveSpace" }] }),
-  component: Onboarding,
+  component: OnboardingRoute,
 });
 
-const STEPS = ["profile", "code", "type", "start"] as const;
+function OnboardingRoute() {
+  return (
+    <RequireAuth>
+      <Onboarding />
+    </RequireAuth>
+  );
+}
+
+const STEPS = ["profile", "mode", "code", "type", "start"] as const;
 type Step = (typeof STEPS)[number];
+type Mode = "create" | "join";
 const EMOJIS = ["🍂", "🍄", "🧣", "🥧", "🦊", "☕", "🕯️", "🧸"];
+
+function generateCoupleCode() {
+  return Math.random().toString(36).slice(2, 6).toUpperCase();
+}
 
 function Onboarding() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [s] = useAppState();
+
   const [step, setStep] = useState<Step>("profile");
+  const [mode, setMode] = useState<Mode>("create");
 
-  const [name, setName] = useState("");
-  const [emoji, setEmoji] = useState("🍂");
-  const [avatarImage, setAvatarImage] = useState<string | null>(null);
-  const [coupleCode] = useState(() => Math.random().toString(36).slice(2, 6).toUpperCase());
+  const [name, setName] = useState(s.me.name && s.me.name !== "Ты" ? s.me.name : "");
+  const [emoji, setEmoji] = useState(s.me.emoji ?? "🍂");
+  const [avatarImage, setAvatarImage] = useState<string | null>(s.me.avatarImage ?? null);
+  const [coupleCode, setCoupleCode] = useState(() => generateCoupleCode());
+  const [joinCode, setJoinCode] = useState("");
   const [copied, setCopied] = useState(false);
-  const [coupleType, setCoupleType] = useState<CoupleType>("together");
-  const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10));
+  const [coupleType, setCoupleType] = useState<CoupleType>(s.coupleType ?? "together");
+  const [startDate, setStartDate] = useState(() =>
+    (s.startDate ? s.startDate : new Date().toISOString()).slice(0, 10),
+  );
+  const [submitting, setSubmitting] = useState(false);
+  const [checking, setChecking] = useState(true);
 
-  const stepIdx = STEPS.indexOf(step);
+  // Если пользователь уже состоит в паре — отправляем сразу на /home.
+  useEffect(() => {
+    let cancelled = false;
+    async function check() {
+      if (!user) return;
+      try {
+        const existing = await findCoupleByMember(user.uid);
+        if (cancelled) return;
+        if (existing) {
+          navigate({ to: "/home", replace: true });
+          return;
+        }
+      } catch (err) {
+        if (import.meta.env.DEV) {
+          console.warn("[onboarding] findCoupleByMember failed", err);
+        }
+      } finally {
+        if (!cancelled) setChecking(false);
+      }
+    }
+    check();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, navigate]);
+
+  const visibleSteps: readonly Step[] =
+    mode === "join" ? (["profile", "mode", "code"] as const) : STEPS;
+  const stepIdx = Math.max(0, visibleSteps.indexOf(step));
+  const isLast = step === visibleSteps[visibleSteps.length - 1];
 
   function next() {
-    const nextIdx = stepIdx + 1;
-    if (nextIdx < STEPS.length) setStep(STEPS[nextIdx]);
+    const idx = visibleSteps.indexOf(step);
+    const nx = visibleSteps[idx + 1];
+    if (nx) setStep(nx);
   }
 
-  function finish() {
-    setState({
-      onboarded: true,
-      me: { name: name || "Я", emoji, avatarImage: avatarImage ?? undefined },
-      partner: { name: "Партнёр", emoji: "🦊" },
-      coupleType,
-      startDate: new Date(startDate).toISOString(),
-      coupleCode,
-    });
-    navigate({ to: "/home" });
+  function prev() {
+    const idx = visibleSteps.indexOf(step);
+    const px = visibleSteps[idx - 1];
+    if (px) setStep(px);
+  }
+
+  function buildProfile(): PartnerProfile {
+    return {
+      name: name.trim() || "Я",
+      emoji,
+      avatarImage: avatarImage ?? undefined,
+    };
+  }
+
+  async function finish() {
+    if (!user) return;
+    setSubmitting(true);
+    try {
+      if (mode === "create") {
+        await createCouple({
+          uid: user.uid,
+          profile: buildProfile(),
+          coupleCode: normalizeCoupleCode(coupleCode),
+          coupleType,
+          startDate: new Date(startDate).toISOString(),
+        });
+        toast.success("Пара создана! Поделись кодом со второй половинкой.");
+      } else {
+        const code = normalizeCoupleCode(joinCode);
+        if (!code) {
+          toast.error("Введи код пары.");
+          setSubmitting(false);
+          return;
+        }
+        await joinCoupleByCode({
+          uid: user.uid,
+          profile: buildProfile(),
+          coupleCode: code,
+        });
+        toast.success("Ты в паре! Добро пожаловать.");
+      }
+      navigate({ to: "/home", replace: true });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Не удалось сохранить.";
+      toast.error(message);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function shareCode() {
@@ -72,16 +173,25 @@ function Onboarding() {
     }
   }
 
+  if (checking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3 text-muted-foreground">
+          <Loader2 size={28} className="animate-spin text-primary" />
+          <p className="text-xs font-black uppercase tracking-[0.2em]">Подключаемся…</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative min-h-screen bg-background text-foreground">
-      {/* Веб-фон */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-1/2 top-[-240px] h-[700px] w-[900px] -translate-x-1/2 rounded-full bg-primary/15 blur-[120px]" />
         <div className="absolute right-[-200px] bottom-[-260px] h-[560px] w-[560px] rounded-full bg-fuchsia-500/10 blur-[140px]" />
       </div>
 
       <div className="relative z-10 mx-auto grid min-h-screen w-full max-w-6xl grid-cols-1 gap-8 px-6 py-10 md:grid-cols-12 md:px-10 md:py-14">
-        {/* Левая панель (desktop) */}
         <aside className="relative overflow-hidden rounded-[40px] border border-border bg-card/80 p-8 backdrop-blur-2xl md:col-span-5 md:flex md:flex-col md:justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -135,13 +245,13 @@ function Onboarding() {
                   Прогресс
                 </p>
                 <p className="mt-1 text-sm font-bold text-foreground/80">
-                  Шаг {stepIdx + 1} из {STEPS.length}
+                  Шаг {stepIdx + 1} из {visibleSteps.length}
                 </p>
               </div>
               <div className="flex w-40 gap-1.5">
-                {STEPS.map((s, i) => (
+                {visibleSteps.map((sId, i) => (
                   <div
-                    key={s}
+                    key={sId}
                     className={`h-1 flex-1 rounded-full transition-all duration-500 ${
                       i <= stepIdx ? "bg-primary" : "bg-border"
                     }`}
@@ -154,17 +264,15 @@ function Onboarding() {
           <div className="pointer-events-none absolute -right-16 -bottom-24 h-72 w-72 rounded-full bg-primary/15 blur-[80px]" />
         </aside>
 
-        {/* Правая панель (контент шагов) */}
         <section className="md:col-span-7 md:flex md:flex-col md:justify-center">
-          {/* Мобильный хедер (компактный прогресс) */}
           <div className="mb-10 flex items-center justify-between md:hidden">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
               <Heart size={20} className="text-primary" fill="currentColor" />
             </div>
             <div className="mx-6 flex flex-1 gap-1.5">
-              {STEPS.map((s, i) => (
+              {visibleSteps.map((sId, i) => (
                 <div
-                  key={s}
+                  key={sId}
                   className={`h-1 flex-1 rounded-full transition-all duration-500 ${
                     i <= stepIdx ? "bg-primary" : "bg-border"
                   }`}
@@ -197,7 +305,33 @@ function Onboarding() {
               </div>
             )}
 
-            {step === "code" && (
+            {step === "mode" && (
+              <div className="animate-in fade-in slide-in-from-right-6">
+                <h2 className="font-display text-3xl font-black md:text-4xl">Создаём пару</h2>
+                <p className="mt-3 text-sm font-medium text-muted-foreground">
+                  Создай новую пару или присоединись по коду партнёра.
+                </p>
+
+                <div className="mt-8 grid gap-4">
+                  <ModeCard
+                    icon={<Users size={20} />}
+                    title="Создать пару"
+                    subtitle="Я первый. Сгенерируем код, чтобы пригласить второго."
+                    active={mode === "create"}
+                    onClick={() => setMode("create")}
+                  />
+                  <ModeCard
+                    icon={<KeyRound size={20} />}
+                    title="Присоединиться по коду"
+                    subtitle="Партнёр уже создал пару и поделился кодом."
+                    active={mode === "join"}
+                    onClick={() => setMode("join")}
+                  />
+                </div>
+              </div>
+            )}
+
+            {step === "code" && mode === "create" && (
               <div className="animate-in fade-in slide-in-from-right-6 text-center">
                 <h2 className="font-display text-3xl font-black md:text-4xl">Код пары</h2>
                 <p className="mt-3 text-sm font-medium text-muted-foreground">
@@ -209,10 +343,10 @@ function Onboarding() {
                   </span>
                 </div>
 
-                <div className="mt-5 grid grid-cols-2 gap-3">
+                <div className="mt-5 grid grid-cols-3 gap-3">
                   <button
                     onClick={shareCode}
-                    className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-primary text-primary-foreground text-xs font-black uppercase tracking-[0.18em] shadow-[0_12px_36px_rgba(var(--color-primary-rgb),0.22)] hover:scale-[1.01] active:scale-[0.99] transition-transform"
+                    className="col-span-2 flex h-12 items-center justify-center gap-2 rounded-2xl bg-primary text-primary-foreground text-xs font-black uppercase tracking-[0.18em] shadow-[0_12px_36px_rgba(var(--color-primary-rgb),0.22)] hover:scale-[1.01] active:scale-[0.99] transition-transform"
                   >
                     <Share2 size={16} />
                     Поделиться
@@ -234,8 +368,36 @@ function Onboarding() {
                     ) : (
                       <Copy size={16} className="text-primary" />
                     )}
-                    {copied ? "Скопировано" : "Копировать"}
+                    {copied ? "OK" : "Копировать"}
                   </button>
+                </div>
+
+                <button
+                  onClick={() => setCoupleCode(generateCoupleCode())}
+                  className="mt-4 text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  обновить код
+                </button>
+              </div>
+            )}
+
+            {step === "code" && mode === "join" && (
+              <div className="animate-in fade-in slide-in-from-right-6">
+                <h2 className="font-display text-3xl font-black md:text-4xl">Введи код пары</h2>
+                <p className="mt-3 text-sm font-medium text-muted-foreground">
+                  Получи код от партнёра, который уже создал пространство.
+                </p>
+                <div className="mt-8">
+                  <input
+                    value={joinCode}
+                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                    placeholder="ABCD"
+                    maxLength={8}
+                    className="w-full rounded-[24px] border border-border bg-background/70 px-6 py-6 text-center font-display text-4xl font-black uppercase tracking-[0.5em] text-foreground outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                  />
+                  <p className="mt-3 text-center text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                    Регистр не важен — приведём к верхнему автоматически.
+                  </p>
                 </div>
               </div>
             )}
@@ -287,23 +449,67 @@ function Onboarding() {
           <footer className="mt-8 flex gap-4">
             {stepIdx > 0 && (
               <button
-                onClick={() => setStep(STEPS[stepIdx - 1])}
-                className="flex h-14 w-14 items-center justify-center rounded-3xl border border-border bg-background/70 transition-all hover:bg-accent"
+                onClick={prev}
+                disabled={submitting}
+                className="flex h-14 w-14 items-center justify-center rounded-3xl border border-border bg-background/70 transition-all hover:bg-accent disabled:opacity-50"
               >
                 <ChevronLeft size={22} />
               </button>
             )}
             <button
-              onClick={step === "start" ? finish : next}
-              className="flex h-14 flex-1 items-center justify-center gap-2 rounded-3xl bg-primary font-bold text-primary-foreground shadow-xl transition-transform hover:scale-[1.01] active:scale-[0.99]"
+              onClick={isLast ? finish : next}
+              disabled={submitting || (step === "profile" && !name.trim())}
+              className="flex h-14 flex-1 items-center justify-center gap-2 rounded-3xl bg-primary font-bold text-primary-foreground shadow-xl transition-transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60"
             >
-              {step === "start" ? "Войти" : "Далее"}
-              <ChevronRight size={18} />
+              {submitting ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <>
+                  {isLast ? (mode === "join" ? "Присоединиться" : "Создать пару") : "Далее"}
+                  <ChevronRight size={18} />
+                </>
+              )}
             </button>
           </footer>
         </section>
       </div>
     </div>
+  );
+}
+
+function ModeCard({
+  icon,
+  title,
+  subtitle,
+  active,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-start gap-4 rounded-[28px] border-2 p-5 text-left transition-all ${
+        active ? "border-primary bg-primary/10" : "border-border bg-background/70 hover:bg-accent"
+      }`}
+    >
+      <div
+        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${
+          active ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+        }`}
+      >
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="text-base font-black text-foreground">{title}</p>
+        <p className="mt-1 text-xs font-semibold text-muted-foreground">{subtitle}</p>
+      </div>
+    </button>
   );
 }
 

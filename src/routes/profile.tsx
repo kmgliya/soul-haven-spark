@@ -1,6 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { useAppState, daysTogether, resetState } from "@/lib/state";
+import { useAuth } from "@/lib/auth";
+import { toast } from "sonner";
 import { badges } from "@/lib/mock-data";
 import {
   Settings,
@@ -30,12 +32,19 @@ export const Route = createFileRoute("/profile")({
 function ProfilePage() {
   const [s, set] = useAppState();
   const navigate = useNavigate();
+  const auth = useAuth();
   const days = daysTogether(s.startDate);
   const streakPct = Math.min(1, s.recordStreak ? s.streak / s.recordStreak : 0);
 
-  function logout() {
-    resetState();
-    navigate({ to: "/" });
+  async function logout() {
+    try {
+      await auth.logout();
+      resetState();
+      navigate({ to: "/" });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Не удалось выйти.";
+      toast.error(message);
+    }
   }
 
   return (

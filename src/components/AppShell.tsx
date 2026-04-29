@@ -3,6 +3,7 @@ import { Home, Sparkles, Image as ImageIcon, Lightbulb, User, Heart } from "luci
 import React from "react";
 import { GridBackground } from "@/components/ui/grid-background";
 import { PremiumPaywallDialog } from "@/components/PremiumPaywallDialog";
+import { RequireAuth, RequireCouple } from "@/lib/auth";
 
 const items = [
   { to: "/home", label: "Дом", icon: Home },
@@ -103,14 +104,18 @@ export function SideNav() {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-background text-foreground antialiased selection:bg-primary/20">
-      <SideNav />
-      <main className="relative flex-1 overflow-y-auto pb-32 md:pb-0">
-        <GridBackground className="min-h-screen">
-          <div className="relative z-10">{children}</div>
-        </GridBackground>
-      </main>
-      <BottomNav />
-    </div>
+    <RequireAuth>
+      <RequireCouple>
+        <div className="flex min-h-screen bg-background text-foreground antialiased selection:bg-primary/20">
+          <SideNav />
+          <main className="relative flex-1 overflow-y-auto pb-32 md:pb-0">
+            <GridBackground className="min-h-screen">
+              <div className="relative z-10">{children}</div>
+            </GridBackground>
+          </main>
+          <BottomNav />
+        </div>
+      </RequireCouple>
+    </RequireAuth>
   );
 }

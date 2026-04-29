@@ -10,9 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TodayRouteImport } from './routes/today'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MemoryRouteImport } from './routes/memory'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as IdeasRouteImport } from './routes/ideas'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as CapsuleRouteImport } from './routes/capsule'
@@ -21,6 +23,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const TodayRoute = TodayRouteImport.update({
   id: '/today',
   path: '/today',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -36,6 +43,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
 const MemoryRoute = MemoryRouteImport.update({
   id: '/memory',
   path: '/memory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IdeasRoute = IdeasRouteImport.update({
@@ -64,9 +76,11 @@ export interface FileRoutesByFullPath {
   '/capsule': typeof CapsuleRoute
   '/home': typeof HomeRoute
   '/ideas': typeof IdeasRoute
+  '/login': typeof LoginRoute
   '/memory': typeof MemoryRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
+  '/register': typeof RegisterRoute
   '/today': typeof TodayRoute
 }
 export interface FileRoutesByTo {
@@ -74,9 +88,11 @@ export interface FileRoutesByTo {
   '/capsule': typeof CapsuleRoute
   '/home': typeof HomeRoute
   '/ideas': typeof IdeasRoute
+  '/login': typeof LoginRoute
   '/memory': typeof MemoryRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
+  '/register': typeof RegisterRoute
   '/today': typeof TodayRoute
 }
 export interface FileRoutesById {
@@ -85,9 +101,11 @@ export interface FileRoutesById {
   '/capsule': typeof CapsuleRoute
   '/home': typeof HomeRoute
   '/ideas': typeof IdeasRoute
+  '/login': typeof LoginRoute
   '/memory': typeof MemoryRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
+  '/register': typeof RegisterRoute
   '/today': typeof TodayRoute
 }
 export interface FileRouteTypes {
@@ -97,9 +115,11 @@ export interface FileRouteTypes {
     | '/capsule'
     | '/home'
     | '/ideas'
+    | '/login'
     | '/memory'
     | '/onboarding'
     | '/profile'
+    | '/register'
     | '/today'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -107,9 +127,11 @@ export interface FileRouteTypes {
     | '/capsule'
     | '/home'
     | '/ideas'
+    | '/login'
     | '/memory'
     | '/onboarding'
     | '/profile'
+    | '/register'
     | '/today'
   id:
     | '__root__'
@@ -117,9 +139,11 @@ export interface FileRouteTypes {
     | '/capsule'
     | '/home'
     | '/ideas'
+    | '/login'
     | '/memory'
     | '/onboarding'
     | '/profile'
+    | '/register'
     | '/today'
   fileRoutesById: FileRoutesById
 }
@@ -128,9 +152,11 @@ export interface RootRouteChildren {
   CapsuleRoute: typeof CapsuleRoute
   HomeRoute: typeof HomeRoute
   IdeasRoute: typeof IdeasRoute
+  LoginRoute: typeof LoginRoute
   MemoryRoute: typeof MemoryRoute
   OnboardingRoute: typeof OnboardingRoute
   ProfileRoute: typeof ProfileRoute
+  RegisterRoute: typeof RegisterRoute
   TodayRoute: typeof TodayRoute
 }
 
@@ -141,6 +167,13 @@ declare module '@tanstack/react-router' {
       path: '/today'
       fullPath: '/today'
       preLoaderRoute: typeof TodayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -162,6 +195,13 @@ declare module '@tanstack/react-router' {
       path: '/memory'
       fullPath: '/memory'
       preLoaderRoute: typeof MemoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ideas': {
@@ -200,9 +240,11 @@ const rootRouteChildren: RootRouteChildren = {
   CapsuleRoute: CapsuleRoute,
   HomeRoute: HomeRoute,
   IdeasRoute: IdeasRoute,
+  LoginRoute: LoginRoute,
   MemoryRoute: MemoryRoute,
   OnboardingRoute: OnboardingRoute,
   ProfileRoute: ProfileRoute,
+  RegisterRoute: RegisterRoute,
   TodayRoute: TodayRoute,
 }
 export const routeTree = rootRouteImport

@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { getState } from "@/lib/state";
+import { useAuth } from "@/lib/auth";
 import { Heart, Sparkles, Shield, ArrowRight, MessageCircle, Zap, Target } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -12,12 +12,13 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (getState().onboarded) {
-      navigate({ to: "/home" });
+    if (!loading && user) {
+      navigate({ to: "/home", replace: true });
     }
-  }, [navigate]);
+  }, [loading, user, navigate]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background text-foreground selection:bg-primary/20">
@@ -32,7 +33,7 @@ function Landing() {
           <span className="font-display text-2xl font-black tracking-tighter">LoveSpace</span>
         </div>
         <Link
-          to="/onboarding"
+          to="/login"
           className="rounded-2xl border border-border bg-background/70 px-6 py-2.5 text-sm font-bold backdrop-blur-xl transition-all hover:bg-accent"
         >
           Войти
@@ -88,17 +89,17 @@ function Landing() {
 
         <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
-            to="/onboarding"
+            to="/register"
             className="group flex h-16 w-full items-center justify-center gap-3 rounded-xl bg-primary px-10 text-lg font-black text-primary-foreground shadow-2xl shadow-primary/30 transition-all hover:scale-105 active:scale-95 sm:w-auto"
           >
             Начать историю
             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </Link>
           <Link
-            to="/home"
+            to="/login"
             className="flex h-16 w-full items-center justify-center rounded-xl border border-border bg-card px-10 text-lg font-bold text-foreground shadow-sm transition-all hover:bg-accent sm:w-auto"
           >
-            Посмотреть демо
+            У меня уже есть аккаунт
           </Link>
         </div>
 

@@ -10,7 +10,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/capsule")({
   head: () => ({
-    meta: [{ title: "Капсула — LoveSpace" }],
+    meta: [{ title: "История — LoveSpace" }],
   }),
   component: CapsulePage,
 });
@@ -80,7 +80,7 @@ function CapsulePage() {
       <div className="container-web page-pad max-w-3xl">
         <header className="mb-10 text-center">
           <h1 className="font-display text-4xl font-black tracking-tight text-foreground">
-            Капсула
+            История
           </h1>
           <p className="mt-2 text-muted-foreground italic">Мгновения, которые останутся с вами</p>
         </header>
@@ -93,7 +93,7 @@ function CapsulePage() {
           <div className="relative z-10">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-background/70 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
               <Sparkles size={12} className="text-primary" />
-              капсула времени
+              история вашей пары
             </div>
 
             <textarea

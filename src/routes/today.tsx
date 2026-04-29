@@ -2,8 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { AppShell } from "@/components/AppShell";
 import { useAppState } from "@/lib/state";
-import { dailyQuestions, dailyTasks, challenges, dailyQuestionsGame } from "@/lib/mock-data";
-import { MessageCircle, Target, Zap, Trophy, ChevronRight, Flame, Heart } from "lucide-react";
+import { dailyQuestions, dailyTasks, dailyQuestionsGame } from "@/lib/mock-data";
+import { MessageCircle, Target, Zap, Flame, Heart } from "lucide-react";
 
 export const Route = createFileRoute("/today")({
   head: () => ({
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/today")({
   component: TodayPage,
 });
 
-type Tab = "question" | "guess" | "task" | "challenge";
+type Tab = "question" | "guess" | "task";
 
 function TodayPage() {
   const [tab, setTab] = useState<Tab>("question");
@@ -21,7 +21,6 @@ function TodayPage() {
     { id: "question", label: "Вопрос", icon: MessageCircle },
     { id: "guess", label: "Угадай", icon: Target },
     { id: "task", label: "Задание", icon: Zap },
-    { id: "challenge", label: "Испытание", icon: Trophy },
   ] as const;
 
   return (
@@ -62,7 +61,6 @@ function TodayPage() {
           {tab === "question" && <QuestionTab />}
           {tab === "guess" && <GuessTab />}
           {tab === "task" && <TaskTab />}
-          {tab === "challenge" && <ChallengeTab />}
         </main>
       </div>
     </AppShell>
@@ -381,33 +379,4 @@ function TaskTab() {
   );
 }
 
-function ChallengeTab() {
-  return (
-    <div className="grid gap-6 md:grid-cols-2">
-      {challenges.map((c) => (
-        <div
-          key={c.id}
-          className="group flex flex-col justify-between rounded-[40px] border border-border bg-card p-8 shadow-sm transition-all hover:border-primary/25 hover:bg-accent/60"
-        >
-          <div>
-            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <Trophy size={20} />
-            </div>
-            <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
-              {c.title}
-            </h3>
-            <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{c.description}</p>
-          </div>
-          <div className="mt-10 flex items-center justify-between">
-            <span className="text-xs font-black uppercase tracking-widest text-primary">
-              {c.days} ДНЕЙ
-            </span>
-            <button className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-transform group-hover:scale-110">
-              <ChevronRight size={20} />
-            </button>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
+// испытания перенесены в раздел /practice

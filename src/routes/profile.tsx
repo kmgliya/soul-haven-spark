@@ -168,7 +168,7 @@ function ProfilePage() {
                   <div className="rounded-[22px] border border-border bg-background/70 p-4">
                     <div className="flex items-center justify-between">
                       <ImageIcon size={16} className="text-primary" />
-                      <span className="text-xs font-bold text-muted-foreground">Капсула</span>
+                      <span className="text-xs font-bold text-muted-foreground">История</span>
                     </div>
                     <p className="mt-3 text-3xl font-black text-foreground leading-none">
                       {s.capsule.length}
@@ -328,7 +328,7 @@ function ProfilePage() {
 
             <h3 className="relative text-2xl font-black tracking-tight">Premium</h3>
             <p className="relative mt-2 text-sm text-muted-foreground leading-relaxed">
-              Эксклюзивные задания для пар и бесконечная Капсула.
+              Эксклюзивные задания для пар и бесконечная История.
             </p>
             <PremiumPaywallDialog
               className="sm:max-w-[560px]"

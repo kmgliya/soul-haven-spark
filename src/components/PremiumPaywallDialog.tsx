@@ -78,7 +78,7 @@ export function PremiumPaywallDialog({
                 Premium для вашей пары
               </DialogTitle>
               <DialogDescription className="text-sm font-medium">
-                Больше поводов быть ближе: капсула без лимитов, эксклюзивные идеи и задания.
+                Больше поводов быть ближе: история без лимитов, эксклюзивные идеи и задания.
               </DialogDescription>
             </DialogHeader>
 
@@ -146,7 +146,7 @@ export function PremiumPaywallDialog({
 
               <ul className="mt-6 space-y-3 text-sm">
                 {[
-                  "Капсула без лимита и расширенная память",
+                  "История без лимита и расширенная память",
                   "Премиум идеи для свиданий и подарков",
                   "Новые задания и челленджи (скоро)",
                 ].map((t) => (

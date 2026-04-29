@@ -1,7 +1,17 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { setState, type CoupleType } from "@/lib/state";
-import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  ImagePlus,
+  Share2,
+  Copy,
+  Check,
+  Calendar as CalendarIcon,
+  Sparkles,
+} from "lucide-react";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "Начать — LoveSpace" }] }),
@@ -18,8 +28,9 @@ function Onboarding() {
 
   const [name, setName] = useState("");
   const [emoji, setEmoji] = useState("🍂");
-  const [partnerName, setPartnerName] = useState("Партнёр");
-  const [partnerEmoji, setPartnerEmoji] = useState("🦊");
+  const [avatarImage, setAvatarImage] = useState<string | null>(null);
+  const [coupleCode] = useState(() => Math.random().toString(36).slice(2, 6).toUpperCase());
+  const [copied, setCopied] = useState(false);
   const [coupleType, setCoupleType] = useState<CoupleType>("together");
   const [startDate, setStartDate] = useState(
     new Date().toISOString().slice(0, 10)
@@ -35,13 +46,35 @@ function Onboarding() {
   function finish() {
     setState({
       onboarded: true,
-      me: { name: name || "Я", emoji },
-      partner: { name: partnerName || "Партнёр", emoji: partnerEmoji },
+      me: { name: name || "Я", emoji, avatarImage: avatarImage ?? undefined },
+      partner: { name: "Партнёр", emoji: "🦊" },
       coupleType,
       startDate: new Date(startDate).toISOString(),
-      coupleCode: Math.random().toString(36).slice(2, 6).toUpperCase(),
+      coupleCode,
     });
     navigate({ to: "/home" });
+  }
+
+  async function shareCode() {
+    const text = `Код пары LoveSpace: ${coupleCode}`;
+    try {
+      // Web Share API (mobile / some desktop)
+      // @ts-expect-error: share exists in supporting browsers
+      if (navigator?.share) {
+        // @ts-expect-error: share exists in supporting browsers
+        await navigator.share({ title: "LoveSpace", text });
+        return;
+      }
+    } catch {
+      // ignore and fallback to clipboard
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1400);
+    } catch {
+      // last resort: nothing
+    }
   }
 
   return (
@@ -66,14 +99,28 @@ function Onboarding() {
               </div>
             </div>
 
-            <div className="mt-10 space-y-6">
+            <div className="mt-10 space-y-7">
               <p className="font-display text-4xl font-black leading-[0.95] tracking-tighter">
                 Настройте <br /> пространство <span className="text-primary">вдвоём</span>
               </p>
-              <p className="max-w-sm text-sm font-medium leading-relaxed text-muted-foreground">
-                Все данные остаются на этом устройстве. Мы ничего не “ломаем” — только помогаем быстро
-                настроить ритуалы, капсулу и профиль.
-              </p>
+
+              <div className="grid gap-3">
+                {[
+                  { icon: <Sparkles size={16} className="text-primary" />, t: "Ритуалы и вопросы на каждый день" },
+                  { icon: <CalendarIcon size={16} className="text-primary" />, t: "Счётчик дней и важные даты" },
+                  { icon: <Heart size={16} className="text-primary" fill="currentColor" />, t: "Капсула времени и воспоминания" },
+                ].map((x) => (
+                  <div
+                    key={x.t}
+                    className="flex items-center gap-3 rounded-[22px] border border-border bg-background/70 px-4 py-3"
+                  >
+                    <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary/10">
+                      {x.icon}
+                    </div>
+                    <p className="text-sm font-bold text-foreground/85">{x.t}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -122,54 +169,61 @@ function Onboarding() {
             </div>
           </div>
 
-          <main className="rounded-[40px] border border-border bg-card/80 p-8 backdrop-blur-2xl shadow-xl md:p-10">
+          <main className="rounded-[34px] border border-border bg-card/80 p-6 backdrop-blur-2xl shadow-xl md:p-8">
           {step === "profile" && (
             <div className="animate-in fade-in slide-in-from-bottom-6">
-              <h2 className="font-display text-4xl font-bold leading-tight">
-                Давайте <br /> познакомимся
+              <h2 className="font-display text-3xl font-black leading-tight md:text-4xl">
+                Давайте настроим <br /> тебя
               </h2>
-              <div className="mt-10 space-y-8">
-                <div>
-                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    Твое имя
-                  </label>
-                  <input
-                    autoFocus
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Напр. Алина"
-                    className="mt-2 w-full border-b-2 border-border bg-transparent py-4 text-2xl outline-none focus:border-primary"
-                  />
-                </div>
-                <div className="space-y-4">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    Твой аватар
-                  </label>
-                  <div className="grid grid-cols-4 gap-3">
-                    {EMOJIS.map((e) => (
-                      <button
-                        key={e}
-                        onClick={() => setEmoji(e)}
-                        className={`aspect-square text-2xl flex items-center justify-center rounded-2xl transition-all ${
-                          emoji === e ? "bg-primary text-primary-foreground scale-110" : "bg-accent text-foreground"
-                        }`}
-                      >
-                        {e}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+              <p className="mt-3 text-sm font-medium text-muted-foreground">
+                Имена и аватарки можно поменять позже в профиле.
+              </p>
+
+              <div className="mt-8">
+                <PersonCard
+                  title="Ты"
+                  name={name}
+                  onName={setName}
+                  emoji={emoji}
+                  onEmoji={setEmoji}
+                  avatarImage={avatarImage}
+                  onAvatarImage={setAvatarImage}
+                />
               </div>
             </div>
           )}
 
           {step === "code" && (
             <div className="animate-in fade-in slide-in-from-right-6 text-center">
-              <h2 className="font-display text-4xl font-bold">Код пары</h2>
-              <div className="mx-auto mt-12 flex h-32 w-full items-center justify-center rounded-[40px] border border-border bg-background/70">
-                <span className="font-display text-5xl font-black tracking-widest text-primary">
-                  {Math.random().toString(36).slice(2, 6).toUpperCase()}
-                </span>
+              <h2 className="font-display text-3xl font-black md:text-4xl">Код пары</h2>
+              <p className="mt-3 text-sm font-medium text-muted-foreground">
+                Отправь партнёру — он введёт код и вы соединитесь.
+              </p>
+              <div className="mx-auto mt-8 flex w-full items-center justify-center rounded-[28px] border border-border bg-background/70 px-6 py-8">
+                <span className="font-display text-5xl font-black tracking-widest text-primary">{coupleCode}</span>
+              </div>
+
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <button
+                  onClick={shareCode}
+                  className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-primary text-primary-foreground text-xs font-black uppercase tracking-[0.18em] shadow-[0_12px_36px_rgba(var(--color-primary-rgb),0.22)] hover:scale-[1.01] active:scale-[0.99] transition-transform"
+                >
+                  <Share2 size={16} />
+                  Поделиться
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(coupleCode);
+                      setCopied(true);
+                      window.setTimeout(() => setCopied(false), 1200);
+                    } catch {}
+                  }}
+                  className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-border bg-background/70 text-xs font-black uppercase tracking-[0.18em] text-foreground hover:bg-accent transition-colors"
+                >
+                  {copied ? <Check size={16} className="text-primary" /> : <Copy size={16} className="text-primary" />}
+                  {copied ? "Скопировано" : "Копировать"}
+                </button>
               </div>
             </div>
           )}
@@ -202,12 +256,15 @@ function Onboarding() {
 
           {step === "start" && (
             <div className="animate-in fade-in slide-in-from-right-6 text-center">
-              <h2 className="font-display text-4xl font-bold">Начало пути</h2>
+              <h2 className="font-display text-3xl font-black md:text-4xl">С какого дня вы вместе?</h2>
+              <p className="mt-3 text-sm font-medium text-muted-foreground">
+                Это нужно, чтобы красиво считать дни и отмечать годовщины.
+              </p>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="mt-10 w-full rounded-[32px] border border-border bg-background/70 p-6 text-center text-2xl font-bold outline-none"
+                className="mt-8 w-full rounded-[28px] border border-border bg-background/70 p-6 text-center text-2xl font-black outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40"
               />
             </div>
           )}
@@ -232,6 +289,96 @@ function Onboarding() {
           </footer>
         </section>
       </div>
+    </div>
+  );
+}
+
+function PersonCard({
+  title,
+  name,
+  onName,
+  emoji,
+  onEmoji,
+  avatarImage,
+  onAvatarImage,
+}: {
+  title: string;
+  name: string;
+  onName: (v: string) => void;
+  emoji: string;
+  onEmoji: (v: string) => void;
+  avatarImage: string | null;
+  onAvatarImage: (v: string | null) => void;
+}) {
+  return (
+    <div className="rounded-[28px] border border-border bg-background/60 p-5 backdrop-blur-xl">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">{title}</p>
+        <label className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-background/70 px-3 text-[10px] font-black uppercase tracking-[0.18em] text-foreground hover:bg-accent transition-colors cursor-pointer">
+          <ImagePlus size={14} className="text-primary" />
+          фото
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const r = new FileReader();
+              r.onload = () => onAvatarImage(String(r.result));
+              r.readAsDataURL(file);
+              e.currentTarget.value = "";
+            }}
+          />
+        </label>
+      </div>
+
+      <div className="mt-4 flex items-center gap-4">
+        <div className="h-16 w-16 overflow-hidden rounded-[22px] border border-border bg-card shadow-sm">
+          {avatarImage ? (
+            <img src={avatarImage} alt="" className="h-full w-full object-cover" draggable={false} />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-3xl">{emoji}</div>
+          )}
+        </div>
+        <div className="flex-1">
+          <input
+            value={name}
+            onChange={(e) => onName(e.target.value)}
+            placeholder={title === "Ты" ? "Напр. Алина" : "Напр. Артём"}
+            className="w-full rounded-[18px] border border-border bg-background/70 px-4 py-3 text-base font-bold text-foreground outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+          />
+          {avatarImage && (
+            <button
+              onClick={() => onAvatarImage(null)}
+              className="mt-2 text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-colors"
+            >
+              убрать фото
+            </button>
+          )}
+        </div>
+      </div>
+
+      {!avatarImage && (
+        <div className="mt-4">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
+            или выбери эмодзи
+          </p>
+          <div className="mt-2 grid grid-cols-8 gap-2">
+            {EMOJIS.map((e) => (
+              <button
+                key={e}
+                onClick={() => onEmoji(e)}
+                className={`flex aspect-square items-center justify-center rounded-2xl text-lg transition-all ${
+                  emoji === e ? "bg-primary text-primary-foreground scale-105" : "bg-accent text-foreground"
+                }`}
+              >
+                {e}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

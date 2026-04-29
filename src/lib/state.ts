@@ -5,6 +5,7 @@ export type CoupleType = "together" | "city" | "ldr";
 export interface PartnerProfile {
   name: string;
   emoji: string;
+  avatarImage?: string; // dataURL (локально), если пользователь загрузил фото
   birthday?: string;
 }
 
@@ -15,6 +16,7 @@ export interface CapsuleItem {
   emoji?: string;
   image?: string;
   date: string;
+  openAt?: string; // если в будущем — капсула закрыта до этого времени
 }
 
 export interface AppState {

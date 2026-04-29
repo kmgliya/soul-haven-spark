@@ -65,7 +65,7 @@ export function SideNav() {
                 to={to}
                 className={`flex items-center gap-4 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300 ${
                   active 
-                    ? "bg-accent text-primary shadow-[inset_0_0_20px_rgba(0,0,0,0.06)]"
+                    ? "bg-accent text-foreground"
                     : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
                 }`}
               >
@@ -78,21 +78,21 @@ export function SideNav() {
         })}
       </ul>
 
-      <div className="mt-auto overflow-hidden rounded-[32px] border border-border bg-card p-6 shadow-sm">
+      <div className="mt-auto overflow-hidden rounded-[24px] border border-border bg-card p-6 shadow-sm">
         <p className="font-display text-lg font-bold text-foreground">Premium</p>
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
           Откройте все возможности для вашей пары.
         </p>
         <PremiumPaywallDialog
           trigger={
-            <button className="mt-4 flex w-full items-center justify-center rounded-2xl bg-primary py-3 text-xs font-bold text-primary-foreground transition-transform hover:scale-[1.02] active:scale-[0.98]">
-              Узнать больше
+            <button className="btn-accent mt-4 flex h-12 w-full items-center justify-center text-xs">
+              <span className="relative z-10">Узнать больше</span>
             </button>
           }
         />
         <Link
           to="/profile"
-          className="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-border bg-background/70 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-foreground hover:bg-accent transition-colors"
+          className="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-border bg-background/70 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
         >
           Профиль
         </Link>

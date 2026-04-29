@@ -28,20 +28,22 @@ export function PremiumPaywallDialog({
   const price = plan === "month" ? 299 : 2490;
   const per = plan === "month" ? "мес" : "год";
   const badge = plan === "year" ? "выгоднее" : "попробовать";
+  const yearlySave = Math.max(0, 299 * 12 - 2490);
+  const socialProof = 12418; // заглушка (позже подтянем из бэка)
 
   return (
     <Dialog>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent
         className={cn(
-          "overflow-hidden rounded-[28px] border-border bg-card p-0 shadow-[0_40px_120px_rgba(0,0,0,0.22)] sm:max-w-[520px]",
+          "overflow-hidden rounded-[24px] border border-[rgba(212,175,55,0.2)] bg-card p-0 shadow-[0_40px_120px_rgba(0,0,0,0.65)] sm:max-w-[520px]",
           className,
         )}
       >
         <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/18 via-fuchsia-500/10 to-sky-500/10" />
-          <div className="absolute -left-16 -top-16 h-56 w-56 rounded-full bg-primary/20 blur-[45px]" />
-          <div className="absolute -right-24 top-10 h-72 w-72 rounded-full bg-fuchsia-500/18 blur-[55px]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[rgba(212,175,55,0.10)] via-[rgba(232,121,160,0.06)] to-transparent" />
+          <div className="absolute -left-16 -top-16 h-56 w-56 rounded-full bg-[rgba(212,175,55,0.08)] blur-[55px]" />
+          <div className="absolute -right-24 top-10 h-72 w-72 rounded-full bg-[rgba(232,121,160,0.07)] blur-[70px]" />
 
           {/* light heart particles */}
           <div className="pointer-events-none absolute inset-0">
@@ -80,14 +82,14 @@ export function PremiumPaywallDialog({
               </DialogDescription>
             </DialogHeader>
 
-            <div className="mt-6 grid grid-cols-2 gap-2 rounded-[22px] border border-border bg-background/60 p-1.5 backdrop-blur-xl">
+            <div className="mt-6 grid grid-cols-2 gap-2 rounded-[16px] border border-[rgba(255,255,255,0.08)] bg-background/60 p-1.5 backdrop-blur-xl">
               <button
                 type="button"
                 onClick={() => setPlan("month")}
                 className={cn(
                   "relative h-11 rounded-[18px] text-xs font-black uppercase tracking-[0.16em] transition-all",
                   plan === "month"
-                    ? "bg-primary text-primary-foreground shadow-[0_14px_36px_rgba(var(--color-primary-rgb),0.24)]"
+                    ? "bg-[rgba(212,175,55,0.15)] text-primary border border-[rgba(212,175,55,0.3)] shadow-[0_14px_36px_rgba(0,0,0,0.45)]"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -99,7 +101,7 @@ export function PremiumPaywallDialog({
                 className={cn(
                   "relative h-11 rounded-[18px] text-xs font-black uppercase tracking-[0.16em] transition-all",
                   plan === "year"
-                    ? "bg-primary text-primary-foreground shadow-[0_14px_36px_rgba(var(--color-primary-rgb),0.24)]"
+                    ? "bg-[rgba(212,175,55,0.15)] text-primary border border-[rgba(212,175,55,0.3)] shadow-[0_14px_36px_rgba(0,0,0,0.45)]"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -107,17 +109,17 @@ export function PremiumPaywallDialog({
               </button>
             </div>
 
-            <div className="mt-4 rounded-[28px] border border-border bg-background/70 p-6 backdrop-blur-2xl">
+            <div className="mt-4 rounded-[24px] border border-[rgba(255,255,255,0.07)] bg-background/50 p-6 backdrop-blur-2xl">
               <div className="flex items-start justify-between gap-6">
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
-                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[rgba(212,175,55,0.18)] text-primary">
                       <Heart className="animate-heartbeat" size={12} fill="currentColor" />
                     </span>
                     {badge}
                   </div>
                   <div className="mt-4 flex items-baseline gap-2">
-                    <span className="font-display text-5xl font-black tracking-tight text-foreground">
+                    <span className="font-display text-5xl font-black tracking-[-0.06em] gold-text-shimmer">
                       {price}
                     </span>
                     <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -126,12 +128,15 @@ export function PremiumPaywallDialog({
                   </div>
                   {plan === "year" && (
                     <p className="mt-1 text-xs font-semibold text-muted-foreground">
-                      В пересчёте: <span className="text-foreground">≈ 208 тг / мес</span>
+                      В пересчёте: <span className="text-foreground">≈ 208 тг / мес</span>{" "}
+                      <span className="ml-2 inline-flex items-center rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-rose-600">
+                        экономия {yearlySave} тг/год
+                      </span>
                     </p>
                   )}
                 </div>
 
-                <div className="shrink-0 rounded-[24px] border border-border bg-card px-4 py-3 shadow-sm">
+                <div className="shrink-0 rounded-[18px] border border-[rgba(255,255,255,0.07)] bg-card px-4 py-3 shadow-sm">
                   <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
                     для двоих
                   </p>
@@ -153,6 +158,27 @@ export function PremiumPaywallDialog({
                   </li>
                 ))}
               </ul>
+
+              <div className="mt-6 flex items-center justify-between rounded-[18px] border border-border bg-card/70 px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                    <Sparkles size={16} />
+                  </span>
+                  <div>
+                    <p className="text-xs font-black text-foreground">Почему выгодно</p>
+                    <p className="text-[11px] font-semibold text-muted-foreground">
+                      На годе дешевле, чем 12 месяцев по отдельности.
+                    </p>
+                  </div>
+                </div>
+                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-primary">
+                  -{Math.round((yearlySave / (299 * 12)) * 100)}%
+                </span>
+              </div>
+
+              <div className="mt-3 text-center text-[11px] font-semibold text-muted-foreground">
+                Уже <span className="text-foreground">{socialProof.toLocaleString("ru-RU")}</span> пар активировали Premium
+              </div>
 
               <Button className="mt-7 h-12 w-full rounded-[18px] text-xs font-black uppercase tracking-[0.2em] shadow-[0_18px_50px_rgba(var(--color-primary-rgb),0.22)] hover:scale-[1.01] active:scale-[0.99] transition-transform">
                 Активировать Premium

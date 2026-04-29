@@ -71,13 +71,19 @@ function DatesTab() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {dateIdeas.map((d) => (
-        <div key={d.id} className="group relative overflow-hidden rounded-[32px] border border-border bg-card p-6 shadow-sm transition-colors hover:bg-accent">
+        <div
+          key={d.id}
+          className="group relative overflow-hidden rounded-[16px] border border-border bg-card p-6 shadow-sm transition-all duration-200 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-1 hover:scale-[1.02] hover:border-[rgba(212,100,150,0.3)]"
+        >
+          <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100" style={{ background: "radial-gradient(ellipse at 80% 20%, rgba(212,100,150,0.06), transparent 60%)" }} />
           <div className="mb-4 flex gap-2">
             {d.tags.map(t => (
-              <span key={t} className="rounded-full bg-accent px-3 py-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground">{t}</span>
+              <span key={t} className="rounded-[6px] bg-[rgba(212,100,150,0.12)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-[rgba(212,100,150,0.9)]">
+                {t}
+              </span>
             ))}
           </div>
-          <h3 className="text-xl font-bold leading-tight text-foreground group-hover:text-primary transition-colors">{d.title}</h3>
+          <h3 className="relative text-[14px] font-semibold leading-snug text-foreground">{d.title}</h3>
           <div className="mt-6 flex items-center justify-between">
             <span className="text-[10px] font-bold uppercase tracking-widest text-primary">{d.budget === 'low' ? 'Доступно' : d.budget === 'mid' ? 'Средне' : 'Премиум'}</span>
             <div className="h-10 w-10 rounded-full border border-border bg-background/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
@@ -124,23 +130,23 @@ function Questions36Tab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 rounded-[28px] border border-border bg-card p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm font-bold text-foreground">Ответы по очереди</p>
-          <p className="text-xs font-medium text-muted-foreground">
-            Сначала отвечает каждый отдельно, потом видно ответы друг друга.
-          </p>
-        </div>
+      <div className="flex justify-end">
         <ToggleGroup
           type="single"
           value={role}
           onValueChange={(v) => (v === "me" || v === "partner") && setRole(v)}
-          className="rounded-[22px] border border-border bg-background/70 p-1.5 backdrop-blur-xl"
+          className="rounded-[22px] border border-border bg-background/70 p-1.5 backdrop-blur-xl shadow-sm"
         >
-          <ToggleGroupItem value="me" className="h-10 rounded-[18px] px-4 text-xs font-black uppercase tracking-[0.16em]">
+          <ToggleGroupItem
+            value="me"
+            className="h-10 rounded-[18px] px-4 text-xs font-black uppercase tracking-[0.16em]"
+          >
             {s.me.emoji} {s.me.name}
           </ToggleGroupItem>
-          <ToggleGroupItem value="partner" className="h-10 rounded-[18px] px-4 text-xs font-black uppercase tracking-[0.16em]">
+          <ToggleGroupItem
+            value="partner"
+            className="h-10 rounded-[18px] px-4 text-xs font-black uppercase tracking-[0.16em]"
+          >
             {s.partner.emoji} {s.partner.name}
           </ToggleGroupItem>
         </ToggleGroup>
@@ -151,6 +157,7 @@ function Questions36Tab() {
         const my = entry[role] ?? "";
         const otherRole = role === "me" ? "partner" : "me";
         const other = entry[otherRole] ?? "";
+        const canShowPartnerBlock = Boolean(my.trim());
         const meDone = Boolean(entry.me?.trim());
         const partnerDone = Boolean(entry.partner?.trim());
         const bothDone = meDone && partnerDone;
@@ -195,9 +202,13 @@ function Questions36Tab() {
 
                 <div className="flex-1">
                   <p className="text-lg font-bold leading-snug text-foreground">{q.text}</p>
-                  <p className="mt-2 text-xs font-semibold text-muted-foreground">
-                    {bothDone ? "Оба ответили — можно сравнивать." : "Ответьте оба, чтобы увидеть ответы друг друга."}
-                  </p>
+                  {bothDone ? (
+                    <p className="mt-2 text-xs font-semibold text-muted-foreground">Оба ответили — можно сравнивать.</p>
+                  ) : (
+                    <p className="mt-2 text-xs font-semibold text-muted-foreground">
+                      Ответ партнёра появится справа сразу после твоего ответа.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -225,12 +236,12 @@ function Questions36Tab() {
                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
                       {role === "me" ? "Ответ партнёра" : "Твой ответ (просмотр)"}
                     </p>
-                    {!other.trim() && (
+                    {!other.trim() ? (
                       <span className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
                         <Lock size={12} />
-                        закрыто
+                        {canShowPartnerBlock ? "ожидаем" : "закрыто"}
                       </span>
-                    )}
+                    ) : null}
                   </div>
 
                   {other.trim() ? (
@@ -238,13 +249,29 @@ function Questions36Tab() {
                       {other}
                     </p>
                   ) : (
-                    <div className="mt-3 flex h-[116px] items-center justify-center rounded-[18px] border border-border bg-card text-center">
-                      <div className="max-w-[260px]">
-                        <p className="text-sm font-bold text-foreground">Партнёр ещё не ответил</p>
-                        <p className="mt-1 text-xs font-medium text-muted-foreground">
-                          Как только он ответит — здесь появится текст.
-                        </p>
-                      </div>
+                    <div className="mt-3 rounded-[18px] border border-border bg-card p-4">
+                      {!canShowPartnerBlock ? (
+                        <div className="flex items-center justify-center py-6 text-center">
+                          <div className="max-w-[260px]">
+                            <p className="text-sm font-bold text-foreground">Сначала ответь ты</p>
+                            <p className="mt-1 text-xs font-medium text-muted-foreground">
+                              Тогда рядом откроется блок с ответом партнёра.
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <p className="text-sm font-bold text-foreground">Партнёр отвечает…</p>
+                          <p className="text-xs font-medium text-muted-foreground">
+                            Пока можно увидеть пример формата ответа:
+                          </p>
+                          <div className="rounded-[16px] border border-border bg-background/70 px-4 py-3">
+                            <p className="text-sm font-medium text-muted-foreground/90">
+                              “Я бы пригласил(а) тебя. Потому что с тобой любой ужин — праздник.”
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

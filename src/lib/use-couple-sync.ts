@@ -44,6 +44,7 @@ export function useCoupleSync() {
 
         setState({
           coupleId: couple.id,
+          partnerUid,
           onboarded: true,
           coupleCode: couple.coupleCode,
           coupleType: couple.coupleType,

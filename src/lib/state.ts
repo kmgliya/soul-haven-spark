@@ -22,6 +22,7 @@ export interface CapsuleItem {
 export interface AppState {
   onboarded: boolean;
   coupleId?: string;
+  partnerUid?: string;
   me: PartnerProfile;
   partner: PartnerProfile;
   coupleCode: string;

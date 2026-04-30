@@ -57,7 +57,7 @@ function Landing() {
             { label: "Вопрос дня", icon: MessageCircle, left: "8%", top: "18%" },
             { label: "Угадай партнёра", icon: Target, left: "62%", top: "12%" },
             { label: "Задание дня", icon: Zap, left: "12%", top: "58%" },
-            { label: "Капсула", icon: Heart, left: "68%", top: "56%" },
+            { label: "История", icon: Heart, left: "68%", top: "56%" },
           ].map((p, idx) => {
             const Icon = p.icon;
             return (
@@ -89,17 +89,17 @@ function Landing() {
 
         <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
-            to="/register"
+            to="/login"
             className="group flex h-16 w-full items-center justify-center gap-3 rounded-xl bg-primary px-10 text-lg font-black text-primary-foreground shadow-2xl shadow-primary/30 transition-all hover:scale-105 active:scale-95 sm:w-auto"
           >
-            Начать историю
+            Войти
             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </Link>
           <Link
-            to="/login"
+            to="/register"
             className="flex h-16 w-full items-center justify-center rounded-xl border border-border bg-card px-10 text-lg font-bold text-foreground shadow-sm transition-all hover:bg-accent sm:w-auto"
           >
-            У меня уже есть аккаунт
+            Создать аккаунт
           </Link>
         </div>
 
@@ -112,7 +112,7 @@ function Landing() {
               icon: Sparkles,
             },
             {
-              title: "Капсула",
+              title: "История",
               desc: "Ваша личная лента моментов, которая всегда под рукой.",
               icon: Heart,
             },

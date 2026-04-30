@@ -40,7 +40,7 @@ function OnboardingRoute() {
 const STEPS = ["profile", "mode", "code", "type", "start"] as const;
 type Step = (typeof STEPS)[number];
 type Mode = "create" | "join";
-const EMOJIS = ["🍂", "🍄", "🧣", "🥧", "🦊", "☕", "🕯️", "🧸"];
+const EMOJIS = ["🐶", "🐱", "🐰", "🐻", "🐼", "🦊", "🐨", "🦄"];
 
 function generateCoupleCode() {
   return Math.random().toString(36).slice(2, 6).toUpperCase();
@@ -221,7 +221,7 @@ function Onboarding() {
                   },
                   {
                     icon: <Heart size={16} className="text-primary" fill="currentColor" />,
-                    t: "Капсула времени и воспоминания",
+                    t: "История и воспоминания",
                   },
                 ].map((x) => (
                   <div
@@ -572,7 +572,7 @@ function PersonCard({
           <input
             value={name}
             onChange={(e) => onName(e.target.value)}
-            placeholder={title === "Ты" ? "Напр. Алина" : "Напр. Артём"}
+            placeholder="Введите своё имя"
             className="w-full rounded-[18px] border border-border bg-background/70 px-4 py-3 text-base font-bold text-foreground outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
           />
           {avatarImage && (

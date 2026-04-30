@@ -1,5 +1,14 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, Sparkles, Image as ImageIcon, Lightbulb, User, Heart } from "lucide-react";
+import {
+  Home,
+  Sparkles,
+  Image as ImageIcon,
+  Lightbulb,
+  User,
+  Heart,
+  Dumbbell,
+  Brain,
+} from "lucide-react";
 import React from "react";
 import { GridBackground } from "@/components/ui/grid-background";
 import { PremiumPaywallDialog } from "@/components/PremiumPaywallDialog";
@@ -8,8 +17,10 @@ import { RequireAuth, RequireCouple } from "@/lib/auth";
 const items = [
   { to: "/home", label: "Дом", icon: Home },
   { to: "/today", label: "Сегодня", icon: Sparkles },
-  { to: "/capsule", label: "Капсула", icon: ImageIcon },
+  { to: "/capsule", label: "История", icon: ImageIcon },
   { to: "/ideas", label: "Идеи", icon: Lightbulb },
+  { to: "/practice", label: "Практика", icon: Dumbbell },
+  { to: "/psychology", label: "Психология", icon: Brain },
   { to: "/profile", label: "Профиль", icon: User },
 ] as const;
 

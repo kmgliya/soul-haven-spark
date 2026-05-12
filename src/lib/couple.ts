@@ -60,10 +60,15 @@ function requireDb() {
   return db;
 }
 
-function throwIfFirestorePermissionDenied(e: unknown): void {
+function throwIfFirestorePermissionDenied(e: unknown, where: "invite_read" | "batch_write"): void {
   if (e instanceof FirebaseError && e.code === "permission-denied") {
+    if (where === "invite_read") {
+      throw new Error(
+        "Firestore: нет прав на чтение coupleInvites. Открой Firebase → Firestore → Rules, вставь весь текст из файла firestore.rules в проекте (там есть блок match /coupleInvites/) и нажми Publish. Либо в терминале проекта: firebase deploy --only firestore:rules.",
+      );
+    }
     throw new Error(
-      "Нет доступа к Firestore. Проверь: ты вошла в аккаунт; в .env.local тот же VITE_FIREBASE_PROJECT_ID, что в консоли; после изменения firestore.rules снова выполни: firebase deploy --only firestore:rules.",
+      "Firestore: нет прав на запись пары. Проверь: ты вошла в аккаунт; VITE_FIREBASE_PROJECT_ID в .env.local = id проекта в консоли; в Rules опубликован полный firestore.rules из репозитория (Publish или firebase deploy --only firestore:rules).",
     );
   }
 }
@@ -117,7 +122,7 @@ export async function createCouple(input: {
   try {
     existingInvite = await getDoc(inviteRef);
   } catch (e) {
-    throwIfFirestorePermissionDenied(e);
+    throwIfFirestorePermissionDenied(e, "invite_read");
     throw e;
   }
   if (existingInvite.exists()) {
@@ -144,7 +149,7 @@ export async function createCouple(input: {
   try {
     await batch.commit();
   } catch (e) {
-    throwIfFirestorePermissionDenied(e);
+    throwIfFirestorePermissionDenied(e, "batch_write");
     throw e;
   }
 

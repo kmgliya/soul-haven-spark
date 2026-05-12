@@ -30,9 +30,7 @@ service cloud.firestore {
         && d.coupleCode.size() <= 8
         && isCoupleType(d.coupleType)
         && d.startDate is string
-        && d.profiles is map
-        && d.profiles.keys().size() == 1
-        && d.profiles.keys().hasAll([request.auth.uid]);
+        && d.profiles is map;
     }
 
     function isJoinSecondMember() {

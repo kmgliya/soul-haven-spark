@@ -240,6 +240,30 @@ export async function findCoupleByMember(uid: string): Promise<CoupleDoc | null>
   return snapshotToCouple(snap.docs[0]);
 }
 
+/**
+ * После записи в Firestore запрос `array-contains` иногда сразу возвращает пусто;
+ * гард на /home не должен из‑за этого слать обратно на /onboarding.
+ */
+export async function findCoupleByMemberReliable(
+  uid: string,
+  opts: { attempts?: number; delayMs?: number } = {},
+): Promise<CoupleDoc | null> {
+  const attempts = opts.attempts ?? 12;
+  const delayMs = opts.delayMs ?? 350;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const c = await findCoupleByMember(uid);
+      if (c) return c;
+    } catch {
+      /* сеть / временные права — повторим */
+    }
+    if (i < attempts - 1) {
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+  }
+  return null;
+}
+
 export function subscribeToCoupleByMember(
   uid: string,
   cb: (couple: CoupleDoc | null) => void,

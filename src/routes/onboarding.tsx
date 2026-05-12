@@ -6,7 +6,7 @@ import {
   createCouple,
   joinCoupleByCode,
   normalizeCoupleCode,
-  findCoupleByMember,
+  findCoupleByMemberReliable,
 } from "@/lib/couple";
 import { toast } from "sonner";
 import {
@@ -73,7 +73,7 @@ function Onboarding() {
     async function check() {
       if (!user) return;
       try {
-        const existing = await findCoupleByMember(user.uid);
+        const existing = await findCoupleByMemberReliable(user.uid);
         if (cancelled) return;
         if (existing) {
           navigate({ to: "/home", replace: true });
@@ -81,7 +81,7 @@ function Onboarding() {
         }
       } catch (err) {
         if (import.meta.env.DEV) {
-          console.warn("[onboarding] findCoupleByMember failed", err);
+          console.warn("[onboarding] findCoupleByMemberReliable failed", err);
         }
       } finally {
         if (!cancelled) setChecking(false);

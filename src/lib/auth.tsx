@@ -121,8 +121,8 @@ export function RequireCouple({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     if (!user) return;
     setStatus("loading");
-    import("@/lib/couple")
-      .then(({ findCoupleByMember }) => findCoupleByMember(user.uid))
+    void import("@/lib/couple")
+      .then(({ findCoupleByMemberReliable }) => findCoupleByMemberReliable(user.uid))
       .then((c) => {
         if (cancelled) return;
         setStatus(c ? "has" : "none");

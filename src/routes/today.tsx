@@ -1,9 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { AppShell } from "@/components/AppShell";
 import { useAppState } from "@/lib/state";
 import { dailyQuestions, dailyTasks, dailyQuestionsGame } from "@/lib/mock-data";
 import { MessageCircle, Target, Zap, Flame, Heart } from "lucide-react";
+import { toast } from "sonner";
+import {
+  ensureDayBase,
+  requestNudge,
+  submitQuestionAnswer,
+  submitGuessPick,
+  subscribeDay,
+  todayId,
+  type DayDoc,
+} from "@/lib/day";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/today")({
   head: () => ({
@@ -16,6 +27,45 @@ type Tab = "question" | "guess" | "task";
 
 function TodayPage() {
   const [tab, setTab] = useState<Tab>("question");
+  const { user } = useAuth();
+  const [s] = useAppState();
+  const coupleId = s.coupleId;
+  const dayId = todayId();
+  const [day, setDay] = useState<DayDoc | null>(null);
+  const lastNudgeTsRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!coupleId) return;
+    const q = dailyQuestions[new Date().getDate() % dailyQuestions.length];
+    void ensureDayBase({ coupleId, dayId, question: q, guessVersion: 1 });
+  }, [coupleId, dayId]);
+
+  useEffect(() => {
+    if (!coupleId) return;
+    const unsub = subscribeDay(
+      coupleId,
+      dayId,
+      (d) => setDay(d),
+      (err) => {
+        if (import.meta.env.DEV) console.warn("[today] subscribeDay error", err);
+      },
+    );
+    return () => unsub();
+  }, [coupleId, dayId]);
+
+  // In-app уведомление партнёру: если его "пнули"
+  useEffect(() => {
+    if (!user) return;
+    const ts = day?.nudges?.requestedAt?.[user.uid];
+    if (!ts) return;
+    const key = JSON.stringify(ts);
+    if (lastNudgeTsRef.current === key) return;
+    lastNudgeTsRef.current = key;
+    const from = day?.nudges?.from?.[user.uid];
+    toast("Партнёр ждёт", {
+      description: from ? "Он уже прошёл — твоя очередь." : "Твоя очередь пройти активность.",
+    });
+  }, [day?.nudges?.requestedAt, day?.nudges?.from, user]);
 
   const tabs = [
     { id: "question", label: "Вопрос", icon: MessageCircle },
@@ -58,8 +108,8 @@ function TodayPage() {
         </div>
 
         <main className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
-          {tab === "question" && <QuestionTab />}
-          {tab === "guess" && <GuessTab />}
+          {tab === "question" && <QuestionTab day={day} />}
+          {tab === "guess" && <GuessTab day={day} />}
           {tab === "task" && <TaskTab />}
         </main>
       </div>
@@ -67,40 +117,50 @@ function TodayPage() {
   );
 }
 
-function QuestionTab() {
-  const [s, set] = useAppState();
-  const question = dailyQuestions[new Date().getDate() % dailyQuestions.length];
-  const [draft, setDraft] = useState(s.todayMyAnswer);
-  const [revealed, setRevealed] = useState(s.todayAnswered.me && s.todayAnswered.partner);
-  const [opening, setOpening] = useState(false);
+function QuestionTab({ day }: { day: DayDoc | null }) {
+  const { user } = useAuth();
+  const [s] = useAppState();
+  const coupleId = s.coupleId;
+  const partnerUid = s.partnerUid;
+  const dayId = todayId();
 
-  const waitingPartner = useMemo(
-    () => s.todayAnswered.me && !s.todayAnswered.partner,
-    [s.todayAnswered.me, s.todayAnswered.partner],
-  );
+  const question =
+    day?.questionOfDay?.q ?? dailyQuestions[new Date().getDate() % dailyQuestions.length];
+  const myDone = Boolean(user && day?.questionOfDay?.done?.[user.uid]);
+  const partnerDone = Boolean(partnerUid && day?.questionOfDay?.done?.[partnerUid]);
+  const bothDone = myDone && partnerDone;
+  const myAnswer = user ? (day?.questionOfDay?.answers?.[user.uid] ?? "") : "";
+  const partnerAnswer = partnerUid ? (day?.questionOfDay?.answers?.[partnerUid] ?? "") : "";
 
+  const [draft, setDraft] = useState("");
   useEffect(() => {
-    const done = s.todayAnswered.me && s.todayAnswered.partner;
-    if (done) setRevealed(true);
-  }, [s.todayAnswered.me, s.todayAnswered.partner]);
+    if (!myDone && draft === "" && myAnswer) setDraft(myAnswer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myAnswer, myDone]);
 
-  function submit() {
+  const [nudging, setNudging] = useState(false);
+
+  async function submit() {
+    if (!user || !coupleId) return;
     if (!draft.trim()) return;
-    set({
-      todayMyAnswer: draft,
-      todayAnswered: { ...s.todayAnswered, me: true, partner: false },
-      todayPartnerAnswer: s.todayPartnerAnswer?.trim()
-        ? s.todayPartnerAnswer
-        : "Я бы сказала, что люблю твой взгляд на мелочи. И это очень мило. 💗",
-      streak: s.streak + 1,
+    await submitQuestionAnswer({
+      coupleId,
+      dayId,
+      uid: user.uid,
+      answer: draft.trim(),
     });
-    setOpening(false);
-    // Демо: имитируем ответ партнёра, чтобы было “ожидание → раскрытие”
-    window.setTimeout(() => {
-      setOpening(true);
-      set({ todayAnswered: { ...s.todayAnswered, me: true, partner: true } });
-      window.setTimeout(() => setRevealed(true), 520);
-    }, 1200);
+    toast.success("Ответ сохранён");
+  }
+
+  async function nudgePartner() {
+    if (!user || !coupleId || !partnerUid) return;
+    setNudging(true);
+    try {
+      await requestNudge({ coupleId, dayId, toUid: partnerUid, fromUid: user.uid });
+      toast("Напомнили партнёру", { description: "У него появится уведомление в приложении." });
+    } finally {
+      setNudging(false);
+    }
   }
 
   return (
@@ -115,26 +175,35 @@ function QuestionTab() {
         </div>
       </div>
 
-      {!revealed ? (
+      {!myDone ? (
         <div className="rounded-[20px] border border-[rgba(255,255,255,0.07)] bg-card p-6 shadow-sm">
-          {!s.todayAnswered.me ? (
-            <>
-              <textarea
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder="Ваш ответ..."
-                className="w-full min-h-37.5 resize-none rounded-[12px] border border-[rgba(255,255,255,0.1)] bg-background px-4 py-3 text-[15px] font-medium text-foreground placeholder:text-white/20 outline-none focus:border-[rgba(212,175,55,0.5)] focus:ring-4 focus:ring-[rgba(212,175,55,0.08)]"
-              />
-              <button
-                onClick={submit}
-                disabled={!draft.trim()}
-                className="btn-gold mt-5 h-14 w-full text-[15px] disabled:opacity-30"
-              >
-                <span className="relative z-10">Отправить</span>
-              </button>
-            </>
-          ) : (
-            <SealedWaitCard opening={opening} partnerName={s.partner.name} />
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder="Ваш ответ..."
+            className="w-full min-h-37.5 resize-none rounded-[12px] border border-[rgba(255,255,255,0.1)] bg-background px-4 py-3 text-[15px] font-medium text-foreground placeholder:text-white/20 outline-none focus:border-[rgba(212,175,55,0.5)] focus:ring-4 focus:ring-[rgba(212,175,55,0.08)]"
+          />
+          <button
+            onClick={() => void submit()}
+            disabled={!draft.trim()}
+            className="btn-gold mt-5 h-14 w-full text-[15px] disabled:opacity-30"
+          >
+            <span className="relative z-10">Отправить</span>
+          </button>
+        </div>
+      ) : !bothDone ? (
+        <div className="rounded-[20px] border border-[rgba(255,255,255,0.07)] bg-card p-6 shadow-sm space-y-4">
+          <SealedWaitCard partnerName={s.partner.name} />
+          {!partnerDone && (
+            <button
+              onClick={() => void nudgePartner()}
+              disabled={nudging}
+              className="btn-accent h-12 w-full"
+            >
+              <span className="relative z-10 font-black uppercase tracking-widest text-xs">
+                {nudging ? "Отправляем…" : "Напомнить партнёру"}
+              </span>
+            </button>
           )}
         </div>
       ) : (
@@ -143,15 +212,13 @@ function QuestionTab() {
             <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-4">
               {s.me.name} (Вы)
             </p>
-            <p className="text-lg font-medium text-foreground leading-relaxed">{s.todayMyAnswer}</p>
+            <p className="text-lg font-medium text-foreground leading-relaxed">{myAnswer}</p>
           </div>
           <div className="rounded-[32px] border border-primary/25 bg-primary/10 p-6 shadow-sm">
             <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-4">
               {s.partner.name}
             </p>
-            <p className="text-lg font-medium text-foreground leading-relaxed">
-              {s.todayPartnerAnswer}
-            </p>
+            <p className="text-lg font-medium text-foreground leading-relaxed">{partnerAnswer}</p>
           </div>
         </div>
       )}
@@ -159,7 +226,7 @@ function QuestionTab() {
   );
 }
 
-function SealedWaitCard({ opening, partnerName }: { opening: boolean; partnerName: string }) {
+function SealedWaitCard({ partnerName }: { partnerName: string }) {
   return (
     <div className="relative overflow-hidden rounded-[32px] border border-border bg-gradient-to-br from-background via-card to-background p-6 shadow-sm">
       <div className="flex items-center justify-between gap-4">
@@ -179,7 +246,7 @@ function SealedWaitCard({ opening, partnerName }: { opening: boolean; partnerNam
       </div>
 
       <div className="mt-6 grid place-items-center">
-        <div className={`envelope ${opening ? "envelope--opening" : ""}`}>
+        <div className="envelope">
           <div className="envelope__base" />
           <div className="envelope__paper">
             <div className="h-2 w-12 rounded-full bg-border/70" />
@@ -200,39 +267,75 @@ function SealedWaitCard({ opening, partnerName }: { opening: boolean; partnerNam
   );
 }
 
-function GuessTab() {
-  const games = [
-    {
-      q: "Где бы я хотел(а) встретить старость?",
-      options: [
-        "Домик в горах",
-        "Квартира в мегаполисе",
-        "Вилла у океана",
-        "В постоянных путешествиях",
-      ],
-    },
-    {
-      q: "Что я выберу в идеальное утро?",
-      options: ["Кофе и тишина", "Прогулка и свежий воздух", "Музыка и танец", "Завтрак в постель"],
-    },
-    {
-      q: "Что для меня самый тёплый жест?",
-      options: ["Обнять молча", "Оставить записку", "Сделать сюрприз", "Сказать “я рядом”"],
-    },
-    {
-      q: "Какая атмосфера мне ближе сегодня?",
-      options: ["Уютно и спокойно", "Лёгкая романтика", "Смех и игры", "Вдохновение и планы"],
-    },
-    {
-      q: "Что я выберу для свидания мечты?",
-      options: ["Пикник на закате", "Кино + плед", "Новая локация", "Вкусный ужин"],
-    },
-  ] as const;
+function GuessTab({ day }: { day: DayDoc | null }) {
+  const { user } = useAuth();
+  const [s] = useAppState();
+  const coupleId = s.coupleId;
+  const partnerUid = s.partnerUid;
+  const dayId = todayId();
 
-  const [step, setStep] = useState(0);
+  const games = useMemo(
+    () =>
+      dailyQuestionsGame.length
+        ? dailyQuestionsGame
+        : ([
+            {
+              q: "Где бы я хотел(а) встретить старость?",
+              options: [
+                "Домик в горах",
+                "Квартира в мегаполисе",
+                "Вилла у океана",
+                "В постоянных путешествиях",
+              ],
+            },
+          ] as const),
+    [],
+  );
+
+  const myPicks = (user && day?.guessGame?.picks?.[user.uid]) ?? [];
+  const myStep = (user && day?.guessGame?.step?.[user.uid]) ?? myPicks.length ?? 0;
+  const myDone = Boolean(user && day?.guessGame?.done?.[user.uid]);
+  const partnerDone = Boolean(partnerUid && day?.guessGame?.done?.[partnerUid]);
+  const bothDone = myDone && partnerDone;
+
   const [picked, setPicked] = useState<number | null>(null);
-  const [done, setDone] = useState(false);
+  const step = Math.min(myStep, games.length - 1);
   const game = games[step];
+
+  const [nudging, setNudging] = useState(false);
+
+  async function pickOption(i: number) {
+    if (!user || !coupleId) return;
+    if (picked !== null) return;
+    setPicked(i);
+    const nextPicks = [...myPicks.slice(0, step), i];
+    const done = step + 1 >= games.length;
+    const nextStep = Math.min(step + 1, games.length);
+    try {
+      await submitGuessPick({
+        coupleId,
+        dayId,
+        uid: user.uid,
+        step: nextStep,
+        pick: i,
+        picks: nextPicks,
+        done,
+      });
+    } finally {
+      window.setTimeout(() => setPicked(null), 350);
+    }
+  }
+
+  async function nudgePartner() {
+    if (!user || !coupleId || !partnerUid) return;
+    setNudging(true);
+    try {
+      await requestNudge({ coupleId, dayId, toUid: partnerUid, fromUid: user.uid });
+      toast("Напомнили партнёру", { description: "У него появится уведомление в приложении." });
+    } finally {
+      setNudging(false);
+    }
+  }
 
   return (
     <div className="max-w-xl mx-auto space-y-6">
@@ -240,7 +343,7 @@ function GuessTab() {
         <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
           <Target size={32} />
         </div>
-        {!done ? (
+        {!myDone ? (
           <>
             <p className="eyebrow">угадай партнёра</p>
             <h2 className="mt-3 text-2xl font-black text-foreground">{game.q}</h2>
@@ -259,24 +362,13 @@ function GuessTab() {
         )}
       </div>
 
-      {!done ? (
+      {!myDone ? (
         <div className="grid gap-3">
           {game.options.map((opt, i) => (
             <button
               key={opt}
               disabled={picked !== null}
-              onClick={() => {
-                setPicked(i);
-                window.setTimeout(() => {
-                  const next = step + 1;
-                  if (next >= games.length) {
-                    setDone(true);
-                    return;
-                  }
-                  setStep(next);
-                  setPicked(null);
-                }, 450);
-              }}
+              onClick={() => void pickOption(i)}
               className={`flex h-16 items-center justify-between rounded-3xl border px-8 text-left font-bold transition-all ${
                 picked === i
                   ? "border-primary bg-primary/20 text-foreground scale-[1.01]"
@@ -288,19 +380,55 @@ function GuessTab() {
             </button>
           ))}
         </div>
+      ) : !bothDone ? (
+        <div className="rounded-[20px] border border-[rgba(255,255,255,0.07)] bg-card p-6 shadow-sm space-y-4">
+          <SealedWaitCard partnerName={s.partner.name} />
+          {!partnerDone && (
+            <button
+              onClick={() => void nudgePartner()}
+              disabled={nudging}
+              className="btn-accent h-12 w-full"
+            >
+              <span className="relative z-10 font-black uppercase tracking-widest text-xs">
+                {nudging ? "Отправляем…" : "Напомнить партнёру"}
+              </span>
+            </button>
+          )}
+        </div>
       ) : (
-        <button
-          onClick={() => {
-            setStep(0);
-            setPicked(null);
-            setDone(false);
-          }}
-          className="btn-accent h-14 w-full"
-        >
-          <span className="relative z-10 font-black uppercase tracking-widest text-sm">
-            Начать заново
-          </span>
-        </button>
+        <div className="rounded-[20px] border border-border bg-card p-6 shadow-sm space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-[32px] border border-border bg-card p-6">
+              <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-4">
+                {s.me.name} (Вы)
+              </p>
+              <ul className="space-y-2 text-sm font-semibold text-muted-foreground">
+                {games.map((g, idx) => (
+                  <li key={g.q}>
+                    <span className="text-foreground">{idx + 1}.</span>{" "}
+                    {g.options[myPicks[idx] ?? 0] ?? "—"}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-[32px] border border-primary/25 bg-primary/10 p-6">
+              <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-4">
+                {s.partner.name}
+              </p>
+              <ul className="space-y-2 text-sm font-semibold text-muted-foreground">
+                {games.map((g, idx) => {
+                  const p = partnerUid ? day?.guessGame?.picks?.[partnerUid]?.[idx] : undefined;
+                  return (
+                    <li key={g.q}>
+                      <span className="text-foreground">{idx + 1}.</span>{" "}
+                      {typeof p === "number" ? g.options[p] : "—"}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

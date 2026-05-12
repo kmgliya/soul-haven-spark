@@ -124,12 +124,13 @@ function QuestionTab({ day }: { day: DayDoc | null }) {
   const partnerUid = s.partnerUid;
   const dayId = todayId();
 
-  const question = day?.questionOfDay?.q ?? dailyQuestions[new Date().getDate() % dailyQuestions.length];
+  const question =
+    day?.questionOfDay?.q ?? dailyQuestions[new Date().getDate() % dailyQuestions.length];
   const myDone = Boolean(user && day?.questionOfDay?.done?.[user.uid]);
   const partnerDone = Boolean(partnerUid && day?.questionOfDay?.done?.[partnerUid]);
   const bothDone = myDone && partnerDone;
-  const myAnswer = user ? day?.questionOfDay?.answers?.[user.uid] ?? "" : "";
-  const partnerAnswer = partnerUid ? day?.questionOfDay?.answers?.[partnerUid] ?? "" : "";
+  const myAnswer = user ? (day?.questionOfDay?.answers?.[user.uid] ?? "") : "";
+  const partnerAnswer = partnerUid ? (day?.questionOfDay?.answers?.[partnerUid] ?? "") : "";
 
   const [draft, setDraft] = useState("");
   useEffect(() => {
@@ -217,9 +218,7 @@ function QuestionTab({ day }: { day: DayDoc | null }) {
             <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-4">
               {s.partner.name}
             </p>
-            <p className="text-lg font-medium text-foreground leading-relaxed">
-              {partnerAnswer}
-            </p>
+            <p className="text-lg font-medium text-foreground leading-relaxed">{partnerAnswer}</p>
           </div>
         </div>
       )}

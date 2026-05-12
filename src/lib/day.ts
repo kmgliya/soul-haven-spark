@@ -101,7 +101,6 @@ export async function submitQuestionAnswer(input: {
     [`questionOfDay.done.${input.uid}`]: true,
     [`questionOfDay.finishedAt.${input.uid}`]: serverTimestamp(),
     updatedAt: serverTimestamp(),
-    createdAt: serverTimestamp(),
     date: input.dayId,
   } as Record<string, unknown>;
   try {
@@ -125,7 +124,6 @@ export async function submitGuessPick(input: {
     [`guessGame.step.${input.uid}`]: input.step,
     [`guessGame.picks.${input.uid}`]: input.picks,
     updatedAt: serverTimestamp(),
-    createdAt: serverTimestamp(),
     date: input.dayId,
   };
   if (input.done) {
@@ -150,7 +148,6 @@ export async function requestNudge(input: {
     [`nudges.requestedAt.${input.toUid}`]: serverTimestamp(),
     [`nudges.from.${input.toUid}`]: input.fromUid,
     updatedAt: serverTimestamp(),
-    createdAt: serverTimestamp(),
     date: input.dayId,
   } as Record<string, unknown>;
   try {
@@ -159,4 +156,3 @@ export async function requestNudge(input: {
     await setDoc(ref, patch, { merge: true });
   }
 }
-

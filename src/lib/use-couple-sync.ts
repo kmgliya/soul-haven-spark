@@ -1,6 +1,10 @@
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
-import { subscribeToCoupleByMember, type CoupleDoc } from "@/lib/couple";
+import {
+  subscribeToCoupleByMember,
+  syncCoupleInviteFromCoupleDoc,
+  type CoupleDoc,
+} from "@/lib/couple";
 import { bindStateToUser, getState, resetState, setState } from "@/lib/state";
 
 /**
@@ -52,6 +56,12 @@ export function useCoupleSync() {
           me: myProfile,
           partner: partnerProfile,
         });
+
+        if (couple.members.length === 1 && couple.creator === user.uid && couple.coupleCode) {
+          void syncCoupleInviteFromCoupleDoc(couple).catch(() => {
+            /* ignore: правила / офлайн */
+          });
+        }
       },
       (err) => {
         if (import.meta.env.DEV) {

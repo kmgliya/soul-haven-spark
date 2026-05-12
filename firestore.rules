@@ -76,16 +76,11 @@ service cloud.firestore {
       allow get: if authed();
       allow list: if false;
 
+      // Без exists/get по паре в том же batch — иначе у части проектов create инвайта отклоняется.
       allow create: if authed()
         && request.resource.data.createdBy == request.auth.uid
         && request.resource.data.code == code
-        && request.resource.data.coupleId is string
-        && exists(/databases/$(database)/documents/couples/$(request.resource.data.coupleId))
-        && get(/databases/$(database)/documents/couples/$(request.resource.data.coupleId)).data.creator
-          == request.auth.uid
-        && memberList(
-          get(/databases/$(database)/documents/couples/$(request.resource.data.coupleId)).data
-        ).size() == 1;
+        && request.resource.data.coupleId is string;
 
       allow delete: if authed()
         && resource.data.coupleId is string

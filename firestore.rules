@@ -20,17 +20,19 @@ service cloud.firestore {
     }
 
     function isNewCoupleCreate() {
-      let m = memberList(request.resource.data);
+      let d = request.resource.data;
+      let m = memberList(d);
       return m.size() == 1
         && m[0] == request.auth.uid
-        && request.resource.data.creator == request.auth.uid
-        && request.resource.data.coupleCode is string
-        && request.resource.data.coupleCode.size() >= 4
-        && request.resource.data.coupleCode.size() <= 8
-        && isCoupleType(request.resource.data.coupleType)
-        && request.resource.data.startDate is string
-        && request.resource.data.profiles is map
-        && request.resource.data.profiles[request.auth.uid] is map;
+        && d.creator == request.auth.uid
+        && d.coupleCode is string
+        && d.coupleCode.size() >= 4
+        && d.coupleCode.size() <= 8
+        && isCoupleType(d.coupleType)
+        && d.startDate is string
+        && d.profiles is map
+        && d.profiles.keys().size() == 1
+        && d.profiles.keys().hasAll([request.auth.uid]);
     }
 
     function isJoinSecondMember() {

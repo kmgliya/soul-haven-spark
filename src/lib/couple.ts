@@ -18,6 +18,7 @@ import {
   type QueryDocumentSnapshot,
   type Unsubscribe,
 } from "firebase/firestore";
+import { FirebaseError } from "firebase/app";
 import { getDb } from "@/lib/firebase";
 import type { CoupleType, PartnerProfile } from "@/lib/state";
 
@@ -57,6 +58,14 @@ function requireDb() {
   const db = getDb();
   if (!db) throw new Error("Firestore не инициализирован. Проверь .env.local");
   return db;
+}
+
+function throwIfFirestorePermissionDenied(e: unknown): void {
+  if (e instanceof FirebaseError && e.code === "permission-denied") {
+    throw new Error(
+      "Нет доступа к Firestore. Проверь: ты вошла в аккаунт; в .env.local тот же VITE_FIREBASE_PROJECT_ID, что в консоли; после изменения firestore.rules снова выполни: firebase deploy --only firestore:rules.",
+    );
+  }
 }
 
 export function normalizeCoupleCode(code: string): string {
@@ -104,7 +113,13 @@ export async function createCouple(input: {
   const profile = stripUndefined(input.profile);
 
   const inviteRef = doc(db, INVITES, code);
-  const existingInvite = await getDoc(inviteRef);
+  let existingInvite;
+  try {
+    existingInvite = await getDoc(inviteRef);
+  } catch (e) {
+    throwIfFirestorePermissionDenied(e);
+    throw e;
+  }
   if (existingInvite.exists()) {
     throw new Error("Такой код пары уже занят. Попробуй сгенерировать новый.");
   }
@@ -126,7 +141,12 @@ export async function createCouple(input: {
     createdBy: input.uid,
     code,
   });
-  await batch.commit();
+  try {
+    await batch.commit();
+  } catch (e) {
+    throwIfFirestorePermissionDenied(e);
+    throw e;
+  }
 
   return {
     id: coupleRef.id,

@@ -27,12 +27,25 @@ function LoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && user) {
-      navigate({ to: search.redirect ?? "/home", replace: true });
+    if (loading || !user) return;
+    if (search.redirect) {
+      navigate({ to: search.redirect, replace: true });
+      return;
     }
+    let cancelled = false;
+    void import("@/lib/couple")
+      .then(({ findCoupleByMemberReliable }) => findCoupleByMemberReliable(user.uid))
+      .then((c) => {
+        if (cancelled) return;
+        navigate({ to: c ? "/home" : "/onboarding", replace: true });
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [loading, user, navigate, search.redirect]);
 
   if (loading) return <AuthLoading />;
+  if (user) return <AuthLoading />;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

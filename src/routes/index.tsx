@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { useAuth } from "@/lib/auth";
+import { useAuth, AuthLoading } from "@/lib/auth";
 import { Heart, Sparkles, Shield, ArrowRight, MessageCircle, Zap, Target } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -15,10 +15,21 @@ function Landing() {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (!loading && user) {
-      navigate({ to: "/home", replace: true });
-    }
+    if (loading || !user) return;
+    let cancelled = false;
+    void import("@/lib/couple")
+      .then(({ findCoupleByMemberReliable }) => findCoupleByMemberReliable(user.uid))
+      .then((c) => {
+        if (cancelled) return;
+        navigate({ to: c ? "/home" : "/onboarding", replace: true });
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [loading, user, navigate]);
+
+  if (loading) return <AuthLoading />;
+  if (user) return <AuthLoading />;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background text-foreground selection:bg-primary/20">

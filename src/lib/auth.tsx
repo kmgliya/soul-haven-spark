@@ -121,17 +121,47 @@ export function RequireCouple({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     if (!user) return;
     setStatus("loading");
-    void import("@/lib/couple")
-      .then(({ findCoupleByMemberReliable }) => findCoupleByMemberReliable(user.uid))
-      .then((c) => {
-        if (cancelled) return;
-        setStatus(c ? "has" : "none");
-      })
-      .catch(() => {
-        if (!cancelled) setStatus("none");
-      });
+
+    let unsub: (() => void) | undefined;
+    let debounceNone: ReturnType<typeof setTimeout> | undefined;
+    let sawCouple = false;
+
+    const safetyNone = window.setTimeout(() => {
+      if (cancelled || sawCouple) return;
+      unsub?.();
+      setStatus("none");
+    }, 45000);
+
+    void import("@/lib/couple").then(({ subscribeToCoupleByMember }) => {
+      if (cancelled) return;
+      unsub = subscribeToCoupleByMember(
+        user.uid,
+        (couple) => {
+          if (cancelled) return;
+          if (couple) {
+            sawCouple = true;
+            window.clearTimeout(debounceNone);
+            window.clearTimeout(safetyNone);
+            setStatus("has");
+            return;
+          }
+          window.clearTimeout(debounceNone);
+          debounceNone = window.setTimeout(() => {
+            if (cancelled || sawCouple) return;
+            setStatus("none");
+          }, 6500);
+        },
+        () => {
+          /* ошибка подписки — ждём safetyNone */
+        },
+      );
+    });
+
     return () => {
       cancelled = true;
+      window.clearTimeout(safetyNone);
+      window.clearTimeout(debounceNone);
+      unsub?.();
     };
   }, [user]);
 

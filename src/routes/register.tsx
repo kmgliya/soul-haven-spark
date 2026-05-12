@@ -34,6 +34,7 @@ function RegisterPage() {
   }, [loading, user, navigate, search.redirect]);
 
   if (loading) return <AuthLoading />;
+  if (user) return <AuthLoading />;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

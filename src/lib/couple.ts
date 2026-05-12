@@ -1,17 +1,20 @@
 import {
-  addDoc,
   arrayUnion,
   collection,
   doc,
+  getDoc,
   getDocs,
   limit,
   onSnapshot,
   query,
   runTransaction,
   serverTimestamp,
+  setDoc,
   updateDoc,
   where,
+  writeBatch,
   type DocumentData,
+  type DocumentSnapshot,
   type QueryDocumentSnapshot,
   type Unsubscribe,
 } from "firebase/firestore";
@@ -31,6 +34,7 @@ export interface CoupleDoc {
 }
 
 const COLLECTION = "couples";
+const INVITES = "coupleInvites";
 
 function stripUndefined<T>(value: T): T {
   if (value === undefined) return value;
@@ -59,8 +63,22 @@ export function normalizeCoupleCode(code: string): string {
   return code.trim().toUpperCase();
 }
 
-function snapshotToCouple(snap: QueryDocumentSnapshot<DocumentData>): CoupleDoc {
-  const data = snap.data();
+function snapshotToCouple(
+  snap: QueryDocumentSnapshot<DocumentData> | DocumentSnapshot<DocumentData>,
+): CoupleDoc {
+  const raw = snap.data();
+  if (!raw) {
+    return {
+      id: snap.id,
+      members: [],
+      creator: "",
+      coupleCode: "",
+      coupleType: "together",
+      startDate: new Date().toISOString(),
+      profiles: {},
+    };
+  }
+  const data = raw;
   return {
     id: snap.id,
     members: (data.members as string[] | undefined) ?? [],
@@ -85,14 +103,15 @@ export async function createCouple(input: {
   const code = normalizeCoupleCode(input.coupleCode);
   const profile = stripUndefined(input.profile);
 
-  const existing = await getDocs(
-    query(collection(db, COLLECTION), where("coupleCode", "==", code), limit(1)),
-  );
-  if (!existing.empty) {
+  const inviteRef = doc(db, INVITES, code);
+  const existingInvite = await getDoc(inviteRef);
+  if (existingInvite.exists()) {
     throw new Error("Такой код пары уже занят. Попробуй сгенерировать новый.");
   }
 
-  const ref = await addDoc(collection(db, COLLECTION), {
+  const batch = writeBatch(db);
+  const coupleRef = doc(collection(db, COLLECTION));
+  batch.set(coupleRef, {
     members: [input.uid],
     creator: input.uid,
     coupleCode: code,
@@ -102,9 +121,15 @@ export async function createCouple(input: {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+  batch.set(inviteRef, {
+    coupleId: coupleRef.id,
+    createdBy: input.uid,
+    code,
+  });
+  await batch.commit();
 
   return {
-    id: ref.id,
+    id: coupleRef.id,
     members: [input.uid],
     creator: input.uid,
     coupleCode: code,
@@ -123,33 +148,62 @@ export async function joinCoupleByCode(input: {
   const code = normalizeCoupleCode(input.coupleCode);
   const profile = stripUndefined(input.profile);
 
-  const found = await getDocs(
-    query(collection(db, COLLECTION), where("coupleCode", "==", code), limit(1)),
-  );
-  if (found.empty) {
-    throw new Error("Пара с таким кодом не найдена.");
+  const inviteRef = doc(db, INVITES, code);
+  const inviteSnap = await getDoc(inviteRef);
+  if (!inviteSnap.exists()) {
+    throw new Error(
+      "Пара с таким кодом не найдена. Попроси партнёра открыть экран с кодом ещё раз (или обновить код).",
+    );
+  }
+  const coupleId = inviteSnap.data().coupleId as string;
+  const coupleRef = doc(db, COLLECTION, coupleId);
+
+  const prelude = await getDoc(coupleRef);
+  if (!prelude.exists()) throw new Error("Пара не найдена.");
+  const preludeMembers = (prelude.data().members as string[] | undefined) ?? [];
+  if (preludeMembers.includes(input.uid)) {
+    return snapshotToCouple(prelude);
   }
 
-  const docSnap = found.docs[0];
-  const ref = doc(db, COLLECTION, docSnap.id);
-
   await runTransaction(db, async (tx) => {
-    const fresh = await tx.get(ref);
+    const inviteFresh = await tx.get(inviteRef);
+    if (!inviteFresh.exists()) throw new Error("Пара с таким кодом не найдена.");
+    const fresh = await tx.get(coupleRef);
     if (!fresh.exists()) throw new Error("Пара не найдена.");
     const data = fresh.data() as DocumentData;
     const members = (data.members as string[] | undefined) ?? [];
-    if (members.includes(input.uid)) return;
     if (members.length >= 2) {
       throw new Error("В этой паре уже два участника.");
     }
-    tx.update(ref, {
+    tx.update(coupleRef, {
       members: arrayUnion(input.uid),
       [`profiles.${input.uid}`]: profile,
       updatedAt: serverTimestamp(),
     });
+    tx.delete(inviteRef);
   });
 
-  return snapshotToCouple(docSnap);
+  const finalSnap = await getDoc(coupleRef);
+  if (!finalSnap.exists()) throw new Error("Пара не найдена.");
+  return snapshotToCouple(finalSnap);
+}
+
+/**
+ * Если пара создана до появления `coupleInvites`, создатель может восстановить приглашение по текущему коду.
+ */
+export async function syncCoupleInviteFromCoupleDoc(couple: CoupleDoc): Promise<void> {
+  if (couple.members.length !== 1) return;
+  const db = requireDb();
+  const code = normalizeCoupleCode(couple.coupleCode);
+  if (code.length < 4) return;
+  const inviteRef = doc(db, INVITES, code);
+  const snap = await getDoc(inviteRef);
+  if (snap.exists()) return;
+  await setDoc(inviteRef, {
+    coupleId: couple.id,
+    createdBy: couple.creator,
+    code,
+  });
 }
 
 export async function findCoupleByMember(uid: string): Promise<CoupleDoc | null> {

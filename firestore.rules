@@ -1,0 +1,102 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function authed() {
+      return request.auth != null;
+    }
+
+    function isCoupleType(v) {
+      return v in ['together', 'city', 'ldr'];
+    }
+
+    function memberList(data) {
+      return data.members is list ? data.members : [];
+    }
+
+    function isCoupleMember(data) {
+      return authed() && request.auth.uid in memberList(data);
+    }
+
+    function isNewCoupleCreate() {
+      let m = memberList(request.resource.data);
+      return m.size() == 1
+        && m[0] == request.auth.uid
+        && request.resource.data.creator == request.auth.uid
+        && request.resource.data.coupleCode is string
+        && request.resource.data.coupleCode.size() >= 4
+        && request.resource.data.coupleCode.size() <= 8
+        && isCoupleType(request.resource.data.coupleType)
+        && request.resource.data.startDate is string
+        && request.resource.data.profiles is map
+        && request.resource.data.profiles[request.auth.uid] is map;
+    }
+
+    function isJoinSecondMember() {
+      let before = memberList(resource.data);
+      let after = memberList(request.resource.data);
+      return before.size() == 1
+        && after.size() == 2
+        && !(request.auth.uid in before)
+        && request.auth.uid in after
+        && after.hasAll(before)
+        && request.resource.data.creator == resource.data.creator
+        && request.resource.data.coupleCode == resource.data.coupleCode
+        && request.resource.data.coupleType == resource.data.coupleType
+        && request.resource.data.startDate == resource.data.startDate;
+    }
+
+    function isMemberCoupleUpdate() {
+      return isCoupleMember(resource.data)
+        && memberList(request.resource.data) == memberList(resource.data)
+        && request.resource.data.creator == resource.data.creator
+        && request.resource.data.coupleCode == resource.data.coupleCode
+        && isCoupleType(request.resource.data.coupleType)
+        && request.resource.data.startDate is string
+        && request.resource.data.profiles is map;
+    }
+
+    match /couples/{coupleId} {
+      allow get, list: if isCoupleMember(resource.data);
+      allow create: if authed() && isNewCoupleCreate();
+      allow update: if authed() && (isJoinSecondMember() || isMemberCoupleUpdate());
+      allow delete: if false;
+    }
+
+    match /couples/{coupleId}/days/{dayId} {
+      allow get, list: if authed()
+        && isCoupleMember(get(/databases/$(database)/documents/couples/$(coupleId)).data);
+      allow create, update: if authed()
+        && isCoupleMember(get(/databases/$(database)/documents/couples/$(coupleId)).data);
+      allow delete: if false;
+    }
+
+    match /coupleInvites/{code} {
+      allow get: if authed();
+      allow list: if false;
+
+      allow create: if authed()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.code == code
+        && request.resource.data.coupleId is string
+        && exists(/databases/$(database)/documents/couples/$(request.resource.data.coupleId))
+        && get(/databases/$(database)/documents/couples/$(request.resource.data.coupleId)).data.creator
+          == request.auth.uid
+        && memberList(
+          get(/databases/$(database)/documents/couples/$(request.resource.data.coupleId)).data
+        ).size() == 1;
+
+      allow delete: if authed()
+        && resource.data.coupleId is string
+        && exists(/databases/$(database)/documents/couples/$(resource.data.coupleId))
+        && isCoupleMember(
+          get(/databases/$(database)/documents/couples/$(resource.data.coupleId)).data
+        );
+    }
+
+    match /users/{uid} {
+      allow read, write: if authed() && request.auth.uid == uid;
+    }
+  }
+}

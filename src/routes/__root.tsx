@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/sonner";
-import { AuthProvider } from "@/lib/auth";
+import { AuthProvider, useAuth } from "@/lib/auth";
+import { registerPushForUser } from "@/lib/fcm-token";
 import { useCoupleSync } from "@/lib/use-couple-sync";
 
 import appCss from "../styles.css?url";
@@ -80,10 +82,22 @@ function CoupleSyncBridge() {
   return null;
 }
 
+function FcmRegisterBridge() {
+  const { user } = useAuth();
+  useEffect(() => {
+    if (!user) return;
+    void registerPushForUser(user.uid).catch(() => {
+      /* нет VAPID / SW / разрешения */
+    });
+  }, [user]);
+  return null;
+}
+
 function RootComponent() {
   return (
     <AuthProvider>
       <CoupleSyncBridge />
+      <FcmRegisterBridge />
       <Outlet />
     </AuthProvider>
   );

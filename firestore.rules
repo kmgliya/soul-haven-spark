@@ -58,7 +58,10 @@ service cloud.firestore {
     }
 
     match /couples/{coupleId} {
-      allow get, list: if isCoupleMember(resource.data);
+      // get: второй партнёр ещё не в members — ему нужно прочитать пару по coupleId из invite до join.
+      allow get: if isCoupleMember(resource.data)
+        || (authed() && memberList(resource.data).size() == 1);
+      allow list: if isCoupleMember(resource.data);
       allow create: if authed() && isNewCoupleCreate();
       allow update: if authed() && (isJoinSecondMember() || isMemberCoupleUpdate());
       allow delete: if false;

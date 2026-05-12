@@ -60,11 +60,24 @@ function requireDb() {
   return db;
 }
 
-function throwIfFirestorePermissionDenied(e: unknown, where: "invite_read" | "batch_write"): void {
+function throwIfFirestorePermissionDenied(
+  e: unknown,
+  where: "invite_read" | "batch_write" | "join_read" | "join_transaction",
+): void {
   if (e instanceof FirebaseError && e.code === "permission-denied") {
     if (where === "invite_read") {
       throw new Error(
         "Firestore: нет прав на чтение coupleInvites. Открой Firebase → Firestore → Rules, вставь весь текст из файла firestore.rules в проекте (там есть блок match /coupleInvites/) и нажми Publish. Либо в терминале проекта: firebase deploy --only firestore:rules.",
+      );
+    }
+    if (where === "join_read") {
+      throw new Error(
+        "Firestore: нет прав на чтение приглашения или пары при входе по коду. Опубликуй актуальные firestore.rules из репозитория (couples: get для пары с одним участником; coupleInvites: read). Publish в консоли или firebase deploy --only firestore:rules.",
+      );
+    }
+    if (where === "join_transaction") {
+      throw new Error(
+        "Firestore: нет прав завершить присоединение (обновление пары или удаление инвайта). Опубликуй последний firestore.rules из репозитория — там разрешено удаление coupleInvites при join вторым участником. Publish или firebase deploy --only firestore:rules.",
       );
     }
     throw new Error(
@@ -174,7 +187,13 @@ export async function joinCoupleByCode(input: {
   const profile = stripUndefined(input.profile);
 
   const inviteRef = doc(db, INVITES, code);
-  const inviteSnap = await getDoc(inviteRef);
+  let inviteSnap;
+  try {
+    inviteSnap = await getDoc(inviteRef);
+  } catch (e) {
+    throwIfFirestorePermissionDenied(e, "invite_read");
+    throw e;
+  }
   if (!inviteSnap.exists()) {
     throw new Error(
       "Пара с таким кодом не найдена. Попроси партнёра открыть экран с кодом ещё раз (или обновить код).",
@@ -183,30 +202,41 @@ export async function joinCoupleByCode(input: {
   const coupleId = inviteSnap.data().coupleId as string;
   const coupleRef = doc(db, COLLECTION, coupleId);
 
-  const prelude = await getDoc(coupleRef);
+  let prelude;
+  try {
+    prelude = await getDoc(coupleRef);
+  } catch (e) {
+    throwIfFirestorePermissionDenied(e, "join_read");
+    throw e;
+  }
   if (!prelude.exists()) throw new Error("Пара не найдена.");
   const preludeMembers = (prelude.data().members as string[] | undefined) ?? [];
   if (preludeMembers.includes(input.uid)) {
     return snapshotToCouple(prelude);
   }
 
-  await runTransaction(db, async (tx) => {
-    const inviteFresh = await tx.get(inviteRef);
-    if (!inviteFresh.exists()) throw new Error("Пара с таким кодом не найдена.");
-    const fresh = await tx.get(coupleRef);
-    if (!fresh.exists()) throw new Error("Пара не найдена.");
-    const data = fresh.data() as DocumentData;
-    const members = (data.members as string[] | undefined) ?? [];
-    if (members.length >= 2) {
-      throw new Error("В этой паре уже два участника.");
-    }
-    tx.update(coupleRef, {
-      members: arrayUnion(input.uid),
-      [`profiles.${input.uid}`]: profile,
-      updatedAt: serverTimestamp(),
+  try {
+    await runTransaction(db, async (tx) => {
+      const inviteFresh = await tx.get(inviteRef);
+      if (!inviteFresh.exists()) throw new Error("Пара с таким кодом не найдена.");
+      const fresh = await tx.get(coupleRef);
+      if (!fresh.exists()) throw new Error("Пара не найдена.");
+      const data = fresh.data() as DocumentData;
+      const members = (data.members as string[] | undefined) ?? [];
+      if (members.length >= 2) {
+        throw new Error("В этой паре уже два участника.");
+      }
+      tx.update(coupleRef, {
+        members: arrayUnion(input.uid),
+        [`profiles.${input.uid}`]: profile,
+        updatedAt: serverTimestamp(),
+      });
+      tx.delete(inviteRef);
     });
-    tx.delete(inviteRef);
-  });
+  } catch (e) {
+    throwIfFirestorePermissionDenied(e, "join_transaction");
+    throw e;
+  }
 
   const finalSnap = await getDoc(coupleRef);
   if (!finalSnap.exists()) throw new Error("Пара не найдена.");

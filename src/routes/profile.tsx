@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
-import { useAppState, daysTogether, resetState } from "@/lib/state";
+import { useAppState, daysTogether, ruDaysNoun, resetState } from "@/lib/state";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { badges } from "@/lib/mock-data";
@@ -109,7 +109,9 @@ function ProfilePage() {
               </div>
               <div className="mt-12 flex items-baseline gap-2">
                 <span className="text-7xl font-black tracking-tighter">{days}</span>
-                <span className="text-xl font-bold opacity-70 uppercase tracking-widest">дней</span>
+                <span className="text-xl font-bold opacity-70 uppercase tracking-widest">
+                  {ruDaysNoun(days)}
+                </span>
               </div>
             </div>
           </section>

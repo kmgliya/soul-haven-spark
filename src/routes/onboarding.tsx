@@ -6,6 +6,7 @@ import {
   createCouple,
   joinCoupleByCode,
   normalizeCoupleCode,
+  normalizeStartDateForStorage,
   findCoupleByMemberReliable,
 } from "@/lib/couple";
 import { toast } from "sonner";
@@ -128,7 +129,7 @@ function Onboarding() {
           profile: buildProfile(),
           coupleCode: normalizeCoupleCode(coupleCode),
           coupleType,
-          startDate: new Date(startDate).toISOString(),
+          startDate: normalizeStartDateForStorage(startDate),
         });
         toast.success("Пара создана! Поделись кодом со второй половинкой.");
       } else {

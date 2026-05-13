@@ -5,7 +5,19 @@ import {
   syncCoupleInviteFromCoupleDoc,
   type CoupleDoc,
 } from "@/lib/couple";
-import { bindStateToUser, getState, resetState, setState } from "@/lib/state";
+import { bindStateToUser, getState, resetState, setState, type PartnerProfile } from "@/lib/state";
+
+function mergePartnerProfile(
+  fromFirestore: PartnerProfile | undefined,
+  fallback: PartnerProfile,
+): PartnerProfile {
+  if (!fromFirestore) return { ...fallback };
+  const merged: PartnerProfile = { ...fallback, ...fromFirestore };
+  const n = merged.name?.trim();
+  merged.name = n && n.length > 0 ? n : fallback.name?.trim() || fallback.name;
+  if (!merged.emoji?.trim()) merged.emoji = fallback.emoji;
+  return merged;
+}
 
 /**
  * Синхронизирует Firestore-документ пары с локальным `AppState`.
@@ -40,10 +52,10 @@ export function useCoupleSync() {
           return;
         }
 
-        const myProfile = couple.profiles[user.uid] ?? getState().me;
+        const myProfile = mergePartnerProfile(couple.profiles[user.uid], getState().me);
         const partnerUid = couple.members.find((m) => m !== user.uid);
         const partnerProfile = partnerUid
-          ? (couple.profiles[partnerUid] ?? getState().partner)
+          ? mergePartnerProfile(couple.profiles[partnerUid], getState().partner)
           : getState().partner;
 
         setState({

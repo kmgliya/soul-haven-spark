@@ -1,4 +1,6 @@
+import { format } from "date-fns";
 import {
+  Timestamp,
   arrayUnion,
   collection,
   doc,
@@ -90,6 +92,33 @@ export function normalizeCoupleCode(code: string): string {
   return code.trim().toUpperCase();
 }
 
+/** Дата начала отношений в Firestore: только календарный YYYY-MM-DD (как в date picker). */
+export function normalizeStartDateForStorage(raw: string): string {
+  const t = raw.trim().slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(t)) {
+    throw new Error("Некорректная дата начала.");
+  }
+  const [y, m, d] = t.split("-").map(Number);
+  const dt = new Date(y, m - 1, d);
+  if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) {
+    throw new Error("Некорректная дата начала.");
+  }
+  return t;
+}
+
+function readStartDateFromFirestore(value: unknown): string {
+  if (value instanceof Timestamp) {
+    return format(value.toDate(), "yyyy-MM-dd");
+  }
+  if (typeof value === "string") {
+    const t = value.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
+    const d = new Date(t);
+    if (!Number.isNaN(d.getTime())) return format(d, "yyyy-MM-dd");
+  }
+  return format(new Date(), "yyyy-MM-dd");
+}
+
 function snapshotToCouple(
   snap: QueryDocumentSnapshot<DocumentData> | DocumentSnapshot<DocumentData>,
 ): CoupleDoc {
@@ -101,7 +130,7 @@ function snapshotToCouple(
       creator: "",
       coupleCode: "",
       coupleType: "together",
-      startDate: new Date().toISOString(),
+      startDate: format(new Date(), "yyyy-MM-dd"),
       profiles: {},
     };
   }
@@ -112,7 +141,7 @@ function snapshotToCouple(
     creator: (data.creator as string | undefined) ?? "",
     coupleCode: (data.coupleCode as string | undefined) ?? "",
     coupleType: (data.coupleType as CoupleType | undefined) ?? "together",
-    startDate: (data.startDate as string | undefined) ?? new Date().toISOString(),
+    startDate: readStartDateFromFirestore(data.startDate),
     profiles: (data.profiles as Record<string, PartnerProfile> | undefined) ?? {},
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
@@ -128,6 +157,7 @@ export async function createCouple(input: {
 }): Promise<CoupleDoc> {
   const db = requireDb();
   const code = normalizeCoupleCode(input.coupleCode);
+  const startYmd = normalizeStartDateForStorage(input.startDate);
   const profile = stripUndefined(input.profile);
 
   const inviteRef = doc(db, INVITES, code);
@@ -149,7 +179,7 @@ export async function createCouple(input: {
     creator: input.uid,
     coupleCode: code,
     coupleType: input.coupleType,
-    startDate: input.startDate,
+    startDate: startYmd,
     profiles: { [input.uid]: profile },
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -172,7 +202,7 @@ export async function createCouple(input: {
     creator: input.uid,
     coupleCode: code,
     coupleType: input.coupleType,
-    startDate: input.startDate,
+    startDate: startYmd,
     profiles: { [input.uid]: profile },
   };
 }

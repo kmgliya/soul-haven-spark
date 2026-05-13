@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
-import { useAppState, daysTogether } from "@/lib/state";
+import { useAppState, daysTogether, ruDaysNoun } from "@/lib/state";
 import { dailyQuestions } from "@/lib/mock-data";
 import { useMemo, useState, type CSSProperties } from "react";
 import {
@@ -108,7 +108,7 @@ function HomePage() {
                   {days}
                 </span>
                 <p className="mt-2 text-[13px] font-semibold tracking-wide text-muted-foreground">
-                  дней вместе
+                  {ruDaysNoun(days)} вместе
                 </p>
               </div>
             </div>

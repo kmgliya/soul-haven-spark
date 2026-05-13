@@ -1,6 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
-import { useAppState, daysTogether, resetState } from "@/lib/state";
+import {
+  useAppState,
+  daysTogether,
+  ruDaysNoun,
+  resetState,
+  formatAnniversaryCalendar,
+} from "@/lib/state";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { badges } from "@/lib/mock-data";
@@ -34,6 +40,7 @@ function ProfilePage() {
   const navigate = useNavigate();
   const auth = useAuth();
   const days = daysTogether(s.startDate);
+  const anniversaryLabel = formatAnniversaryCalendar(s.startDate);
   const streakPct = Math.min(1, s.recordStreak ? s.streak / s.recordStreak : 0);
 
   async function logout() {
@@ -107,9 +114,16 @@ function ProfilePage() {
                   <p className="text-sm opacity-60 font-medium">Пара</p>
                 </div>
               </div>
-              <div className="mt-12 flex items-baseline gap-2">
-                <span className="text-7xl font-black tracking-tighter">{days}</span>
-                <span className="text-xl font-bold opacity-70 uppercase tracking-widest">дней</span>
+              <div className="mt-12 flex flex-col gap-1">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-7xl font-black tracking-tighter">{days}</span>
+                  <span className="text-xl font-bold opacity-70 uppercase tracking-widest">
+                    {ruDaysNoun(days)}
+                  </span>
+                </div>
+                {anniversaryLabel ? (
+                  <p className="text-sm font-medium opacity-75">С даты {anniversaryLabel}</p>
+                ) : null}
               </div>
             </div>
           </section>

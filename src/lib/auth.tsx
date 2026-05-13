@@ -123,36 +123,66 @@ export function RequireCouple({ children }: { children: React.ReactNode }) {
     setStatus("loading");
 
     let unsub: (() => void) | undefined;
-    let debounceNone: ReturnType<typeof setTimeout> | undefined;
+    let debounceNone: number | undefined;
     let sawCouple = false;
+
+    const clearDebounce = () => {
+      if (debounceNone !== undefined) {
+        window.clearTimeout(debounceNone);
+        debounceNone = undefined;
+      }
+    };
+
+    const markHas = () => {
+      if (cancelled || sawCouple) return;
+      sawCouple = true;
+      clearDebounce();
+      window.clearTimeout(safetyNone);
+      setStatus("has");
+    };
 
     const safetyNone = window.setTimeout(() => {
       if (cancelled || sawCouple) return;
       unsub?.();
       setStatus("none");
-    }, 45000);
+    }, 60000);
 
-    void import("@/lib/couple").then(({ subscribeToCoupleByMember }) => {
+    void import("@/lib/couple").then(({ subscribeToCoupleByMember, findCoupleByMemberReliable }) => {
       if (cancelled) return;
+
+      void findCoupleByMemberReliable(user.uid).then((c) => {
+        if (cancelled || sawCouple) return;
+        if (c) markHas();
+      });
+
       unsub = subscribeToCoupleByMember(
         user.uid,
         (couple) => {
           if (cancelled) return;
           if (couple) {
-            sawCouple = true;
-            window.clearTimeout(debounceNone);
-            window.clearTimeout(safetyNone);
-            setStatus("has");
+            markHas();
             return;
           }
-          window.clearTimeout(debounceNone);
+          clearDebounce();
           debounceNone = window.setTimeout(() => {
-            if (cancelled || sawCouple) return;
-            setStatus("none");
-          }, 6500);
+            void (async () => {
+              if (cancelled || sawCouple) return;
+              const again = await findCoupleByMemberReliable(user.uid, {
+                attempts: 12,
+                delayMs: 350,
+              });
+              if (cancelled || sawCouple) return;
+              if (again) {
+                markHas();
+              } else {
+                window.clearTimeout(safetyNone);
+                setStatus("none");
+              }
+            })();
+          }, 1200);
         },
         () => {
-          /* ошибка подписки — ждём safetyNone */
+          /* ошибка подписки — ждём safetyNone или повторный get в debounce */
         },
       );
     });
@@ -160,7 +190,7 @@ export function RequireCouple({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
       window.clearTimeout(safetyNone);
-      window.clearTimeout(debounceNone);
+      clearDebounce();
       unsub?.();
     };
   }, [user]);

@@ -57,6 +57,18 @@ service cloud.firestore {
         && request.resource.data.profiles is map;
     }
 
+    function coupleData(coupleId) {
+      return get(/databases/$(database)/documents/couples/$(coupleId)).data;
+    }
+
+    match /couples/{coupleId}/userQ36/{uid} {
+      allow get: if authed() && isCoupleMember(coupleData(coupleId));
+      allow create, update: if authed()
+        && isCoupleMember(coupleData(coupleId))
+        && request.auth.uid == uid;
+      allow delete: if false;
+    }
+
     match /couples/{coupleId} {
       // get: второй партнёр ещё не в members — ему нужно прочитать пару по coupleId из invite до join.
       allow get: if isCoupleMember(resource.data)
@@ -88,8 +100,21 @@ service cloud.firestore {
       allow delete: if authed()
         && resource.data.coupleId is string
         && exists(/databases/$(database)/documents/couples/$(resource.data.coupleId))
-        && isCoupleMember(
-          get(/databases/$(database)/documents/couples/$(resource.data.coupleId)).data
+        && (
+          isCoupleMember(
+            get(/databases/$(database)/documents/couples/$(resource.data.coupleId)).data
+          )
+          || (
+            memberList(
+              get(/databases/$(database)/documents/couples/$(resource.data.coupleId)).data
+            ).size() == 1
+            && !(
+              request.auth.uid
+                in memberList(
+                  get(/databases/$(database)/documents/couples/$(resource.data.coupleId)).data
+                )
+            )
+          )
         );
     }
 

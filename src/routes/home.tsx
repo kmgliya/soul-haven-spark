@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
-import { useAppState, daysTogether } from "@/lib/state";
+import { useAppState, daysTogether, ruDaysNoun, formatAnniversaryCalendar } from "@/lib/state";
 import { dailyQuestions } from "@/lib/mock-data";
 import { useMemo, useState, type CSSProperties } from "react";
 import {
@@ -21,6 +21,7 @@ export const Route = createFileRoute("/home")({
 function HomePage() {
   const [s] = useAppState();
   const days = daysTogether(s.startDate);
+  const anniversaryLabel = formatAnniversaryCalendar(s.startDate);
   const question = dailyQuestions[0];
   const streakPct = Math.min(1, s.recordStreak ? s.streak / s.recordStreak : 0);
   const streakDash = Math.max(0.001, Math.min(0.999, streakPct));
@@ -108,8 +109,13 @@ function HomePage() {
                   {days}
                 </span>
                 <p className="mt-2 text-[13px] font-semibold tracking-wide text-muted-foreground">
-                  дней вместе
+                  {ruDaysNoun(days)} вместе
                 </p>
+                {anniversaryLabel ? (
+                  <p className="mt-1 text-[12px] font-medium text-muted-foreground/90">
+                    С даты {anniversaryLabel}
+                  </p>
+                ) : null}
               </div>
             </div>
           </section>

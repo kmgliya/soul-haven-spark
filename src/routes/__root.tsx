@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { registerPushForUser } from "@/lib/fcm-token";
 import { useCoupleSync } from "@/lib/use-couple-sync";
+import { useQ36Sync } from "@/lib/use-q36-sync";
 
 import appCss from "../styles.css?url";
 
@@ -79,6 +80,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function CoupleSyncBridge() {
   useCoupleSync();
+  useQ36Sync();
   return null;
 }
 

@@ -5,7 +5,37 @@ import {
   syncCoupleInviteFromCoupleDoc,
   type CoupleDoc,
 } from "@/lib/couple";
-import { bindStateToUser, getState, resetState, setState } from "@/lib/state";
+import { bindStateToUser, getState, resetState, setState, type PartnerProfile } from "@/lib/state";
+
+/** Склеивает профиль из Firestore с локальным; `defaultName` — если и там, и там пусто. */
+function mergePartnerProfile(
+  fromFirestore: PartnerProfile | undefined,
+  fallback: PartnerProfile,
+  defaultName: string,
+  isMe: boolean,
+): PartnerProfile {
+  const placeholder = isMe ? "Ты" : "Партнёр";
+  const defaultEmoji = isMe ? "🍂" : "🦊";
+  const fbName = fallback.name?.trim();
+  const fbClean = fbName && fbName !== placeholder ? fbName : "";
+  const base: PartnerProfile = {
+    ...fallback,
+    name: fbClean,
+    emoji: fallback.emoji?.trim() || defaultEmoji,
+  };
+  if (!fromFirestore) {
+    return {
+      ...base,
+      name: base.name || defaultName,
+      emoji: base.emoji,
+    };
+  }
+  const merged: PartnerProfile = { ...base, ...fromFirestore };
+  const n = typeof merged.name === "string" ? merged.name.trim() : "";
+  merged.name = n.length > 0 ? n : base.name || defaultName;
+  if (!merged.emoji?.trim()) merged.emoji = base.emoji;
+  return merged;
+}
 
 /**
  * Синхронизирует Firestore-документ пары с локальным `AppState`.
@@ -40,10 +70,20 @@ export function useCoupleSync() {
           return;
         }
 
-        const myProfile = couple.profiles[user.uid] ?? getState().me;
+        const myProfile = mergePartnerProfile(
+          couple.profiles[user.uid],
+          getState().me,
+          "Я",
+          true,
+        );
         const partnerUid = couple.members.find((m) => m !== user.uid);
         const partnerProfile = partnerUid
-          ? (couple.profiles[partnerUid] ?? getState().partner)
+          ? mergePartnerProfile(
+              couple.profiles[partnerUid],
+              getState().partner,
+              "Партнёр",
+              false,
+            )
           : getState().partner;
 
         setState({

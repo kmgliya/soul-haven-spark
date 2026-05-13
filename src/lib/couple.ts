@@ -1,4 +1,6 @@
+import { format } from "date-fns";
 import {
+  Timestamp,
   arrayUnion,
   collection,
   doc,
@@ -60,11 +62,24 @@ function requireDb() {
   return db;
 }
 
-function throwIfFirestorePermissionDenied(e: unknown, where: "invite_read" | "batch_write"): void {
+function throwIfFirestorePermissionDenied(
+  e: unknown,
+  where: "invite_read" | "batch_write" | "join_read" | "join_transaction",
+): void {
   if (e instanceof FirebaseError && e.code === "permission-denied") {
     if (where === "invite_read") {
       throw new Error(
         "Firestore: нет прав на чтение coupleInvites. Открой Firebase → Firestore → Rules, вставь весь текст из файла firestore.rules в проекте (там есть блок match /coupleInvites/) и нажми Publish. Либо в терминале проекта: firebase deploy --only firestore:rules.",
+      );
+    }
+    if (where === "join_read") {
+      throw new Error(
+        "Firestore: нет прав на чтение приглашения или пары при входе по коду. Опубликуй актуальные firestore.rules из репозитория (couples: get для пары с одним участником; coupleInvites: read). Publish в консоли или firebase deploy --only firestore:rules.",
+      );
+    }
+    if (where === "join_transaction") {
+      throw new Error(
+        "Firestore: нет прав завершить присоединение (обновление пары или удаление инвайта). Опубликуй последний firestore.rules из репозитория — там разрешено удаление coupleInvites при join вторым участником. Publish или firebase deploy --only firestore:rules.",
       );
     }
     throw new Error(
@@ -74,7 +89,67 @@ function throwIfFirestorePermissionDenied(e: unknown, where: "invite_read" | "ba
 }
 
 export function normalizeCoupleCode(code: string): string {
-  return code.trim().toUpperCase();
+  return code
+    .replace(/[\s\uFEFF\u00A0\u2007\u202F]+/g, "")
+    .trim()
+    .toUpperCase();
+}
+
+/** Дата начала отношений в Firestore: только календарный YYYY-MM-DD (как в date picker). */
+export function normalizeStartDateForStorage(raw: string): string {
+  const t = raw.trim().slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(t)) {
+    throw new Error("Некорректная дата начала.");
+  }
+  const [y, m, d] = t.split("-").map(Number);
+  const dt = new Date(y, m - 1, d);
+  if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) {
+    throw new Error("Некорректная дата начала.");
+  }
+  return t;
+}
+
+/** Если в документе нет startDate — не подставляем «сегодня», иначе ломается счётчик дней. */
+function readStartDateFromFirestore(value: unknown): string {
+  if (value === undefined || value === null) return "";
+  if (value instanceof Timestamp) {
+    return format(value.toDate(), "yyyy-MM-dd");
+  }
+  if (typeof value === "string") {
+    const t = value.trim();
+    if (!t) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
+    const isoPrefix = /^(\d{4}-\d{2}-\d{2})[T\s]/.exec(t);
+    if (isoPrefix) return isoPrefix[1];
+    const d = new Date(t);
+    if (!Number.isNaN(d.getTime())) return format(d, "yyyy-MM-dd");
+  }
+  return "";
+}
+
+/** Нормализация map profiles из Firestore (типы/пустые поля). */
+function normalizeProfiles(raw: unknown): Record<string, PartnerProfile> {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  const out: Record<string, PartnerProfile> = {};
+  for (const [uid, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (!uid || !value || typeof value !== "object") continue;
+    const v = value as Record<string, unknown>;
+    const rawName = typeof v.name === "string" ? v.name.trim() : "";
+    const emoji =
+      typeof v.emoji === "string" && v.emoji.trim().length > 0 ? v.emoji.trim() : "🍂";
+    const p: PartnerProfile = {
+      name: rawName.length > 0 ? rawName : "",
+      emoji,
+    };
+    if (typeof v.avatarImage === "string" && v.avatarImage.length > 0) {
+      p.avatarImage = v.avatarImage;
+    }
+    if (typeof v.birthday === "string" && v.birthday.length > 0) {
+      p.birthday = v.birthday;
+    }
+    out[uid] = p;
+  }
+  return out;
 }
 
 function snapshotToCouple(
@@ -88,7 +163,7 @@ function snapshotToCouple(
       creator: "",
       coupleCode: "",
       coupleType: "together",
-      startDate: new Date().toISOString(),
+      startDate: "",
       profiles: {},
     };
   }
@@ -99,8 +174,8 @@ function snapshotToCouple(
     creator: (data.creator as string | undefined) ?? "",
     coupleCode: (data.coupleCode as string | undefined) ?? "",
     coupleType: (data.coupleType as CoupleType | undefined) ?? "together",
-    startDate: (data.startDate as string | undefined) ?? new Date().toISOString(),
-    profiles: (data.profiles as Record<string, PartnerProfile> | undefined) ?? {},
+    startDate: readStartDateFromFirestore(data.startDate),
+    profiles: normalizeProfiles(data.profiles),
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
   };
@@ -115,6 +190,7 @@ export async function createCouple(input: {
 }): Promise<CoupleDoc> {
   const db = requireDb();
   const code = normalizeCoupleCode(input.coupleCode);
+  const startYmd = normalizeStartDateForStorage(input.startDate);
   const profile = stripUndefined(input.profile);
 
   const inviteRef = doc(db, INVITES, code);
@@ -136,7 +212,7 @@ export async function createCouple(input: {
     creator: input.uid,
     coupleCode: code,
     coupleType: input.coupleType,
-    startDate: input.startDate,
+    startDate: startYmd,
     profiles: { [input.uid]: profile },
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -159,7 +235,7 @@ export async function createCouple(input: {
     creator: input.uid,
     coupleCode: code,
     coupleType: input.coupleType,
-    startDate: input.startDate,
+    startDate: startYmd,
     profiles: { [input.uid]: profile },
   };
 }
@@ -174,39 +250,56 @@ export async function joinCoupleByCode(input: {
   const profile = stripUndefined(input.profile);
 
   const inviteRef = doc(db, INVITES, code);
-  const inviteSnap = await getDoc(inviteRef);
+  let inviteSnap;
+  try {
+    inviteSnap = await getDoc(inviteRef);
+  } catch (e) {
+    throwIfFirestorePermissionDenied(e, "invite_read");
+    throw e;
+  }
   if (!inviteSnap.exists()) {
     throw new Error(
-      "Пара с таким кодом не найдена. Попроси партнёра открыть экран с кодом ещё раз (или обновить код).",
+      "Пара с таким кодом не найдена. Сверь код с экраном «Код пары» у создателя (4 символа). Если он нажал «обновить код», нужен новый. Убедитесь, что оба заходите в один и тот же сайт и аккаунт Firebase.",
     );
   }
   const coupleId = inviteSnap.data().coupleId as string;
   const coupleRef = doc(db, COLLECTION, coupleId);
 
-  const prelude = await getDoc(coupleRef);
+  let prelude;
+  try {
+    prelude = await getDoc(coupleRef);
+  } catch (e) {
+    throwIfFirestorePermissionDenied(e, "join_read");
+    throw e;
+  }
   if (!prelude.exists()) throw new Error("Пара не найдена.");
   const preludeMembers = (prelude.data().members as string[] | undefined) ?? [];
   if (preludeMembers.includes(input.uid)) {
     return snapshotToCouple(prelude);
   }
 
-  await runTransaction(db, async (tx) => {
-    const inviteFresh = await tx.get(inviteRef);
-    if (!inviteFresh.exists()) throw new Error("Пара с таким кодом не найдена.");
-    const fresh = await tx.get(coupleRef);
-    if (!fresh.exists()) throw new Error("Пара не найдена.");
-    const data = fresh.data() as DocumentData;
-    const members = (data.members as string[] | undefined) ?? [];
-    if (members.length >= 2) {
-      throw new Error("В этой паре уже два участника.");
-    }
-    tx.update(coupleRef, {
-      members: arrayUnion(input.uid),
-      [`profiles.${input.uid}`]: profile,
-      updatedAt: serverTimestamp(),
+  try {
+    await runTransaction(db, async (tx) => {
+      const inviteFresh = await tx.get(inviteRef);
+      if (!inviteFresh.exists()) throw new Error("Пара с таким кодом не найдена.");
+      const fresh = await tx.get(coupleRef);
+      if (!fresh.exists()) throw new Error("Пара не найдена.");
+      const data = fresh.data() as DocumentData;
+      const members = (data.members as string[] | undefined) ?? [];
+      if (members.length >= 2) {
+        throw new Error("В этой паре уже два участника.");
+      }
+      tx.update(coupleRef, {
+        members: arrayUnion(input.uid),
+        [`profiles.${input.uid}`]: profile,
+        updatedAt: serverTimestamp(),
+      });
+      tx.delete(inviteRef);
     });
-    tx.delete(inviteRef);
-  });
+  } catch (e) {
+    throwIfFirestorePermissionDenied(e, "join_transaction");
+    throw e;
+  }
 
   const finalSnap = await getDoc(coupleRef);
   if (!finalSnap.exists()) throw new Error("Пара не найдена.");

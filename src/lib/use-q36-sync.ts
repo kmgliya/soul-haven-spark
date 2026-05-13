@@ -35,12 +35,13 @@ export function useQ36Sync() {
 
   useEffect(() => {
     if (!user?.uid) return;
+    const myUid = user.uid;
 
     prevReveal.current = false;
 
     let cancelled = false;
-    let unsubMy: (() => void) | null = null;
-    let unsubPartner: (() => void) | null = null;
+    let stopMy: (() => void) | null = null;
+    let stopPartner: (() => void) | null = null;
     let myMap: Record<string, string> = {};
     let partnerMap: Record<string, string> = {};
 
@@ -54,12 +55,12 @@ export function useQ36Sync() {
         return;
       }
       setState({
-        q36: buildQ36Map(user.uid, puid, myMap, partnerMap),
+        q36: buildQ36Map(myUid, puid, myMap, partnerMap),
       });
     }
 
     function maybeToast(puid: string) {
-      const merged = buildQ36Map(user.uid, puid, myMap, partnerMap);
+      const merged = buildQ36Map(myUid, puid, myMap, partnerMap);
       const { revealPartnerAnswers } = q36Completion(merged);
       const now = Date.now();
       if (revealPartnerAnswers) {
@@ -76,13 +77,6 @@ export function useQ36Sync() {
       }
     }
 
-    unsubMy?.();
-    unsubPartner?.();
-    unsubMy = null;
-    unsubPartner = null;
-    myMap = {};
-    partnerMap = {};
-
     if (!coupleId) {
       setState({ q36: {} });
       return () => {
@@ -90,9 +84,9 @@ export function useQ36Sync() {
       };
     }
 
-    unsubMy = subscribeUserQ36Answers(
+    stopMy = subscribeUserQ36Answers(
       coupleId,
-      user.uid,
+      myUid,
       (answers) => {
         myMap = answers;
         flush();
@@ -102,7 +96,7 @@ export function useQ36Sync() {
     );
 
     if (partnerUid) {
-      unsubPartner = subscribeUserQ36Answers(
+      stopPartner = subscribeUserQ36Answers(
         coupleId,
         partnerUid,
         (answers) => {
@@ -118,8 +112,8 @@ export function useQ36Sync() {
 
     return () => {
       cancelled = true;
-      unsubMy?.();
-      unsubPartner?.();
+      if (stopMy) stopMy();
+      if (stopPartner) stopPartner();
     };
   }, [user?.uid, coupleId, partnerUid]);
 }

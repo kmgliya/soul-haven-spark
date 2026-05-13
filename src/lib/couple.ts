@@ -113,6 +113,9 @@ function readStartDateFromFirestore(value: unknown): string {
   if (typeof value === "string") {
     const t = value.trim();
     if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
+    // ISO «…T…»: берём календарную часть как в строке, без сдвига через локальный timezone.
+    const isoPrefix = /^(\d{4}-\d{2}-\d{2})[T\s]/.exec(t);
+    if (isoPrefix) return isoPrefix[1];
     const d = new Date(t);
     if (!Number.isNaN(d.getTime())) return format(d, "yyyy-MM-dd");
   }

@@ -123,7 +123,7 @@ export function RequireCouple({ children }: { children: React.ReactNode }) {
     setStatus("loading");
 
     let unsub: (() => void) | undefined;
-    let debounceNone: ReturnType<typeof setTimeout> | undefined;
+    let debounceNone: number | undefined;
     let sawCouple = false;
 
     const safetyNone = window.setTimeout(() => {

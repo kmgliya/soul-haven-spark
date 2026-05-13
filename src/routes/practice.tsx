@@ -103,7 +103,7 @@ function Challenges() {
 function Questions36() {
   const [s, set] = useAppState();
   const { user } = useAuth();
-  const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const timers = useRef<Record<string, number>>({});
   const coupleId = s.coupleId;
   const partnerUid = s.partnerUid;
 

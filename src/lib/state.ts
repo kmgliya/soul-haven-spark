@@ -147,6 +147,14 @@ function relationshipStartAsLocalDay(isoOrYmd: string): Date {
   return new Date(raw);
 }
 
+/** Человекочитаемая дата начала отношений (локальный календарь), пусто если не распарсилось. */
+export function formatAnniversaryCalendar(isoOrYmd: string): string {
+  const d = relationshipStartAsLocalDay(isoOrYmd);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
+}
+
 /** Склонение: 1 день, 2 дня, 5 дней. */
 export function ruDaysNoun(n: number): string {
   const k = Math.abs(Math.trunc(n));

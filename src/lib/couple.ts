@@ -106,20 +106,47 @@ export function normalizeStartDateForStorage(raw: string): string {
   return t;
 }
 
+/** Если в документе нет startDate — не подставляем «сегодня», иначе ломается счётчик дней. */
 function readStartDateFromFirestore(value: unknown): string {
+  if (value === undefined || value === null) return "";
   if (value instanceof Timestamp) {
     return format(value.toDate(), "yyyy-MM-dd");
   }
   if (typeof value === "string") {
     const t = value.trim();
+    if (!t) return "";
     if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
-    // ISO «…T…»: берём календарную часть как в строке, без сдвига через локальный timezone.
     const isoPrefix = /^(\d{4}-\d{2}-\d{2})[T\s]/.exec(t);
     if (isoPrefix) return isoPrefix[1];
     const d = new Date(t);
     if (!Number.isNaN(d.getTime())) return format(d, "yyyy-MM-dd");
   }
-  return format(new Date(), "yyyy-MM-dd");
+  return "";
+}
+
+/** Нормализация map profiles из Firestore (типы/пустые поля). */
+function normalizeProfiles(raw: unknown): Record<string, PartnerProfile> {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  const out: Record<string, PartnerProfile> = {};
+  for (const [uid, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (!uid || !value || typeof value !== "object") continue;
+    const v = value as Record<string, unknown>;
+    const rawName = typeof v.name === "string" ? v.name.trim() : "";
+    const emoji =
+      typeof v.emoji === "string" && v.emoji.trim().length > 0 ? v.emoji.trim() : "🍂";
+    const p: PartnerProfile = {
+      name: rawName.length > 0 ? rawName : "",
+      emoji,
+    };
+    if (typeof v.avatarImage === "string" && v.avatarImage.length > 0) {
+      p.avatarImage = v.avatarImage;
+    }
+    if (typeof v.birthday === "string" && v.birthday.length > 0) {
+      p.birthday = v.birthday;
+    }
+    out[uid] = p;
+  }
+  return out;
 }
 
 function snapshotToCouple(
@@ -133,7 +160,7 @@ function snapshotToCouple(
       creator: "",
       coupleCode: "",
       coupleType: "together",
-      startDate: format(new Date(), "yyyy-MM-dd"),
+      startDate: "",
       profiles: {},
     };
   }
@@ -145,7 +172,7 @@ function snapshotToCouple(
     coupleCode: (data.coupleCode as string | undefined) ?? "",
     coupleType: (data.coupleType as CoupleType | undefined) ?? "together",
     startDate: readStartDateFromFirestore(data.startDate),
-    profiles: (data.profiles as Record<string, PartnerProfile> | undefined) ?? {},
+    profiles: normalizeProfiles(data.profiles),
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
   };

@@ -1,4 +1,4 @@
-import { differenceInCalendarDays, format } from "date-fns";
+import { differenceInCalendarDays } from "date-fns";
 import { useEffect, useState } from "react";
 
 export type CoupleType = "together" | "city" | "ldr";
@@ -53,7 +53,7 @@ const DEFAULT_STATE: AppState = {
   partner: { name: "Партнёр", emoji: "🦊" },
   coupleCode: "",
   coupleType: "together",
-  startDate: format(new Date(), "yyyy-MM-dd"),
+  startDate: "",
   streak: 0,
   recordStreak: 0,
   premium: false,
@@ -136,6 +136,7 @@ export function useAppState(): [AppState, typeof setState] {
 /** Локальный календарный день начала (YYYY-MM-DD как в date picker или префикс ISO). */
 function relationshipStartAsLocalDay(isoOrYmd: string): Date {
   const raw = isoOrYmd.trim();
+  if (!raw) return new Date(NaN);
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw);
   if (m) {
     const y = Number(m[1]);

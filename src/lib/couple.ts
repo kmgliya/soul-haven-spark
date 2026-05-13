@@ -89,7 +89,10 @@ function throwIfFirestorePermissionDenied(
 }
 
 export function normalizeCoupleCode(code: string): string {
-  return code.trim().toUpperCase();
+  return code
+    .replace(/[\s\uFEFF\u00A0\u2007\u202F]+/g, "")
+    .trim()
+    .toUpperCase();
 }
 
 /** Дата начала отношений в Firestore: только календарный YYYY-MM-DD (как в date picker). */
@@ -256,7 +259,7 @@ export async function joinCoupleByCode(input: {
   }
   if (!inviteSnap.exists()) {
     throw new Error(
-      "Пара с таким кодом не найдена. Попроси партнёра открыть экран с кодом ещё раз (или обновить код).",
+      "Пара с таким кодом не найдена. Сверь код с экраном «Код пары» у создателя (4 символа). Если он нажал «обновить код», нужен новый. Убедитесь, что оба заходите в один и тот же сайт и аккаунт Firebase.",
     );
   }
   const coupleId = inviteSnap.data().coupleId as string;
